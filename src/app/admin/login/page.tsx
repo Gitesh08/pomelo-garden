@@ -117,9 +117,9 @@ export default function AdminLoginPage() {
         <div className="bg-white rounded-3xl p-7 sm:p-9 border border-[rgba(139,130,88,0.22)] shadow-xl space-y-6">
           {/* Header */}
           <div className="text-center space-y-3">
-            <div className="w-14 h-14 mx-auto rounded-2xl bg-[#FAF8F3] border border-[rgba(139,130,88,0.25)] p-2 shadow-xs flex items-center justify-center">
+            <div className="w-14 h-14 mx-auto rounded-2xl bg-white border border-[rgba(139,130,88,0.25)] p-1.5 shadow-xs flex items-center justify-center overflow-hidden">
               <img
-                src="/images/pomelo-garden-logo.svg"
+                src="/images/pomelo-logo.png"
                 alt="Pomelo Garden Logo"
                 className="w-full h-full object-contain"
               />

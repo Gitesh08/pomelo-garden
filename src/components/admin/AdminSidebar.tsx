@@ -78,9 +78,9 @@ export function AdminSidebar({ children }: { children: React.ReactNode }) {
         {/* Top: Logo & Title */}
         <div className="flex flex-col">
           <div className="p-5 flex items-center gap-3 border-b border-white/10">
-            <div className="w-9 h-9 rounded-xl bg-white p-1 flex items-center justify-center shrink-0 shadow-sm">
+            <div className="w-9 h-9 rounded-xl bg-white p-1 flex items-center justify-center shrink-0 shadow-sm overflow-hidden">
               <img
-                src="/images/pomelo-garden-logo.svg"
+                src="/images/pomelo-logo.png"
                 alt="Pomelo Logo"
                 className="w-full h-full object-contain"
               />

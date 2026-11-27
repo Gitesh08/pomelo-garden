@@ -88,7 +88,7 @@ export default function GuestLandingPage() {
   )}`;
 
   return (
-    <div className="min-h-screen bg-[#FAF8F3] text-[#141715] font-sans selection:bg-[#E06354]/20 pb-20 sm:pb-0">
+    <div className="min-h-screen bg-[#FAF8F3] text-[#141715] font-sans selection:bg-[#E06354]/20">
       {/* =========================================================================
           1. FIXED MINIMAL HEADER (Transparent over Hero, Ivory Frost on Scroll)
          ========================================================================= */}
@@ -102,9 +102,9 @@ export default function GuestLandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 sm:h-24 flex items-center justify-between">
           {/* Logo Only (Enlarged for clear crest legibility) */}
           <Link href="/" className="flex items-center group" aria-label="Pomelo Garden Home">
-            <div className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-full overflow-hidden bg-white/95 border border-[rgba(139,130,88,0.22)] flex items-center justify-center p-1 shadow-md shrink-0">
+            <div className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-full overflow-hidden bg-white border border-[rgba(139,130,88,0.22)] flex items-center justify-center p-1 shadow-md shrink-0">
               <img
-                src="/images/pomelo-garden-logo.svg"
+                src="/images/pomelo-logo.png"
                 alt="Pomelo Garden Logo"
                 className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105"
               />
@@ -214,9 +214,9 @@ export default function GuestLandingPage() {
             />
             <div className="relative bg-[#FAF8F3] border-b border-[rgba(139,130,88,0.25)] p-5 space-y-4 shadow-2xl z-10 animate-in slide-in-from-top duration-200">
               <div className="flex items-center justify-between pb-3 border-b border-[rgba(139,130,88,0.16)]">
-                <div className="w-10 h-10 rounded-full bg-white/95 p-1 border border-[rgba(139,130,88,0.25)]">
+                <div className="w-10 h-10 rounded-full overflow-hidden bg-white p-1 border border-[rgba(139,130,88,0.25)]">
                   <img
-                    src="/images/pomelo-garden-logo.svg"
+                    src="/images/pomelo-logo.png"
                     alt="Pomelo Garden Logo"
                     className="w-full h-full object-contain"
                   />
@@ -299,7 +299,7 @@ export default function GuestLandingPage() {
          ========================================================================= */}
       <section
         ref={heroRef}
-        className="relative min-h-[78vh] sm:min-h-[680px] lg:min-h-[760px] flex flex-col justify-end pb-6 sm:pb-10 pt-24 z-20"
+        className="relative min-h-[92svh] sm:min-h-[720px] lg:min-h-[840px] flex flex-col justify-end pb-8 sm:pb-12 pt-24 z-20"
       >
         {/* Full-bleed background hero photography (responsive desktop & mobile) */}
         <div className="absolute inset-0 z-0 overflow-hidden">
@@ -574,15 +574,15 @@ export default function GuestLandingPage() {
       {/* =========================================================================
           8. GROUNDED DEEP FOREST FOOTER
          ========================================================================= */}
-      <footer className="bg-[#101814] text-[#FAF8F3] border-t border-white/10 pt-14 pb-24 sm:pb-12">
+      <footer className="bg-[#101814] text-[#FAF8F3] border-t border-white/10 pt-14 pb-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
           <div className="grid grid-cols-1 md:grid-cols-12 gap-10 pb-10 border-b border-white/10">
             {/* Column 1: Brand & Location */}
             <div className="md:col-span-5 space-y-4">
               <Link href="/" className="inline-block" aria-label="Pomelo Garden Home">
-                <div className="w-14 h-14 rounded-full overflow-hidden bg-white/95 p-1 shadow-md">
+                <div className="w-14 h-14 rounded-full overflow-hidden bg-white p-1 shadow-md">
                   <img
-                    src="/images/pomelo-garden-logo.svg"
+                    src="/images/pomelo-logo.png"
                     alt="Pomelo Garden Logo"
                     className="w-full h-full object-contain"
                   />
@@ -709,33 +709,6 @@ export default function GuestLandingPage() {
         endDate={endDate}
         onApply={handleApplyCalendarDates}
       />
-
-      {/* =========================================================================
-          10. FIXED MOBILE BOTTOM BOOKING DOCK (Four Seasons Mobile Bar)
-         ========================================================================= */}
-      <div className="fixed bottom-0 inset-x-0 z-30 sm:hidden bg-white/95 backdrop-blur-md border-t border-[rgba(139,130,88,0.25)] p-3 shadow-lg flex items-center justify-between gap-3">
-        <button
-          type="button"
-          onClick={() => setCalendarOpen(true)}
-          className="flex-1 text-left py-1 cursor-pointer"
-        >
-          <span className="text-[10px] font-mono uppercase tracking-wider text-[#788E73] font-bold block">
-            Dates Selected
-          </span>
-          <span className="text-xs font-bold text-[#141715] truncate font-sans">
-            {startDate && endDate ? `${startDate.slice(5)} to ${endDate.slice(5)}` : "Select Dates"}
-          </span>
-        </button>
-
-        <button
-          type="button"
-          onClick={handleNavigateToRooms}
-          className="px-4 py-2.5 rounded-lg bg-[#141715] text-[#FAF8F3] text-xs font-bold uppercase tracking-wider shadow-sm flex items-center gap-1.5 shrink-0 cursor-pointer"
-        >
-          <span>Check Rooms</span>
-          <ArrowRight className="w-3.5 h-3.5 text-[#E06354]" />
-        </button>
-      </div>
     </div>
   );
 }
