@@ -1,26 +1,56 @@
 @import "tailwindcss";
 
+@theme {
+  --font-serif: var(--font-cormorant), "EB Garamond", Cormorant, Georgia, serif;
+  --font-sans: var(--font-plus-jakarta), "Plus Jakarta Sans", system-ui, sans-serif;
+  --font-admin-sans: var(--font-inter), "Inter", system-ui, sans-serif;
+  --font-admin-mono: var(--font-jetbrains), "JetBrains Mono", monospace;
+
+  --color-pomelo-pith: #FAF8F3;
+  --color-sunlit-stone: #F2EDE2;
+  --color-calligraphy-charcoal: #141715;
+  --color-sage-bark: #56635A;
+  --color-ruby-pomelo: #E06354;
+  --color-citrus-rind: #7BA23F;
+  --color-sage-leaf: #788E73;
+  --color-orchard-olive: #8B8258;
+
+  --color-admin-canvas: #F3F5F4;
+  --color-admin-sidebar: #101814;
+  --color-admin-emerald: #1E6F50;
+  --color-admin-coral: #E06354;
+  --color-admin-border: #E2E7E4;
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --font-cormorant-fallback: "Cormorant Garamond", Georgia, serif;
+  --font-plus-jakarta-fallback: "Plus Jakarta Sans", -apple-system, sans-serif;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* Custom hairline borders and utilities */
+.border-subtle {
+  border-color: rgba(139, 130, 88, 0.16);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(86, 99, 90, 0.2);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(86, 99, 90, 0.4);
 }
