@@ -16,107 +16,42 @@ import {
   ChevronRight,
   ChevronLeft,
 } from "lucide-react";
-import { useResortStore, ROOM_CATEGORIES, RoomCategory } from "@/lib/resort-store";
+import { useResortStore, ROOM_CATEGORIES, RoomCategory, getTodayISO, addDaysToISO } from "@/lib/resort-store";
 
 interface LiveAvailabilityBoardProps {
   onSelectBookingDate?: (date: string, categoryId?: string) => void;
 }
 
-// Fixed base date for SSR stability
-const BASE_DATE = "2026-11-26";
-
 export function LiveAvailabilityBoard({ onSelectBookingDate }: LiveAvailabilityBoardProps) {
   const { getAvailabilityForDate } = useResortStore();
-  const [selectedDate, setSelectedDate] = useState<string>(BASE_DATE);
+  const [selectedDate, setSelectedDate] = useState<string>(() => getTodayISO());
 
-  // Generate 12 upcoming dates starting from base date
+  // Generate 12 upcoming dates starting dynamically from today
   const dateOptions = useMemo(() => {
-    const list: {
-      dateStr: string;
-      dayOfWeek: string;
-      displayDate: string;
-      isWeekend: boolean;
-      label?: string;
-    }[] = [
-      {
-        dateStr: "2026-11-26",
-        dayOfWeek: "Thu",
-        displayDate: "26 Nov",
-        isWeekend: false,
-        label: "Today",
-      },
-      {
-        dateStr: "2026-11-27",
-        dayOfWeek: "Fri",
-        displayDate: "27 Nov",
-        isWeekend: false,
-        label: "Tomorrow",
-      },
-      {
-        dateStr: "2026-11-28",
-        dayOfWeek: "Sat",
-        displayDate: "28 Nov",
-        isWeekend: true,
-        label: "Weekend",
-      },
-      {
-        dateStr: "2026-11-29",
-        dayOfWeek: "Sun",
-        displayDate: "29 Nov",
-        isWeekend: true,
-        label: "Weekend",
-      },
-      {
-        dateStr: "2026-11-30",
-        dayOfWeek: "Mon",
-        displayDate: "30 Nov",
-        isWeekend: false,
-      },
-      {
-        dateStr: "2026-12-01",
-        dayOfWeek: "Tue",
-        displayDate: "01 Dec",
-        isWeekend: false,
-      },
-      {
-        dateStr: "2026-12-02",
-        dayOfWeek: "Wed",
-        displayDate: "02 Dec",
-        isWeekend: false,
-      },
-      {
-        dateStr: "2026-12-03",
-        dayOfWeek: "Thu",
-        displayDate: "03 Dec",
-        isWeekend: false,
-      },
-      {
-        dateStr: "2026-12-04",
-        dayOfWeek: "Fri",
-        displayDate: "04 Dec",
-        isWeekend: false,
-      },
-      {
-        dateStr: "2026-12-05",
-        dayOfWeek: "Sat",
-        displayDate: "05 Dec",
-        isWeekend: true,
-        label: "Weekend",
-      },
-      {
-        dateStr: "2026-12-06",
-        dayOfWeek: "Sun",
-        displayDate: "06 Dec",
-        isWeekend: true,
-        label: "Weekend",
-      },
-      {
-        dateStr: "2026-12-07",
-        dayOfWeek: "Mon",
-        displayDate: "07 Dec",
-        isWeekend: false,
-      },
-    ];
+    const today = getTodayISO();
+    const list = [];
+    for (let i = 0; i < 12; i++) {
+      const dateStr = addDaysToISO(today, i);
+      const [y, m, d] = dateStr.split("-").map(Number);
+      const cur = new Date(y, m - 1, d);
+      const dayOfWeek = cur.toLocaleDateString("en-US", { weekday: "short" });
+      const displayDate = cur.toLocaleDateString("en-US", { day: "2-digit", month: "short" });
+      const dayNum = cur.getDay();
+      const isWeekend = dayNum === 0 || dayNum === 6;
+
+      let label: string | undefined = undefined;
+      if (i === 0) label = "Today";
+      else if (i === 1) label = "Tomorrow";
+      else if (isWeekend) label = "Weekend";
+
+      list.push({
+        dateStr,
+        dayOfWeek,
+        displayDate,
+        isWeekend,
+        label,
+      });
+    }
     return list;
   }, []);
 

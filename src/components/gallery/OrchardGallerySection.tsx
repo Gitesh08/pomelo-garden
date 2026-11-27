@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
-import { Image as ImageIcon, X, Maximize2, Compass, Sparkles } from "lucide-react";
+import React, { useState, useRef } from "react";
+import { Image as ImageIcon, X, Maximize2, ChevronLeft, ChevronRight } from "lucide-react";
 
 interface GalleryPhoto {
   id: string;
@@ -86,11 +86,44 @@ const GALLERY_PHOTOS: GalleryPhoto[] = [
 export function OrchardGallerySection() {
   const [activeFilter, setActiveFilter] = useState<string>("all");
   const [lightboxPhoto, setLightboxPhoto] = useState<GalleryPhoto | null>(null);
+  const [mobileSlide, setMobileSlide] = useState(0);
+  const carouselRef = useRef<HTMLDivElement>(null);
 
   const filteredPhotos =
     activeFilter === "all"
       ? GALLERY_PHOTOS
       : GALLERY_PHOTOS.filter((p) => p.category === activeFilter);
+
+  const handleFilterChange = (key: string) => {
+    setActiveFilter(key);
+    setMobileSlide(0);
+    if (carouselRef.current) {
+      carouselRef.current.scrollTo({ left: 0, behavior: "smooth" });
+    }
+  };
+
+  const scrollToSlide = (index: number) => {
+    if (!carouselRef.current) return;
+    const clamped = Math.max(0, Math.min(index, filteredPhotos.length - 1));
+    setMobileSlide(clamped);
+    const child = carouselRef.current.children[clamped] as HTMLElement | undefined;
+    if (child) {
+      carouselRef.current.scrollTo({
+        left: child.offsetLeft - 16,
+        behavior: "smooth",
+      });
+    }
+  };
+
+  const handleCarouselScroll = () => {
+    if (!carouselRef.current) return;
+    const el = carouselRef.current;
+    const cardWidth = (el.firstElementChild as HTMLElement | null)?.offsetWidth || 300;
+    const idx = Math.round(el.scrollLeft / (cardWidth + 16));
+    if (idx >= 0 && idx < filteredPhotos.length) {
+      setMobileSlide(idx);
+    }
+  };
 
   return (
     <section id="gallery" className="py-16 sm:py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto scroll-mt-20">
@@ -122,7 +155,7 @@ export function OrchardGallerySection() {
         ].map((tab) => (
           <button
             key={tab.key}
-            onClick={() => setActiveFilter(tab.key)}
+            onClick={() => handleFilterChange(tab.key)}
             className={`px-4 py-2 rounded-full text-xs font-semibold tracking-wider uppercase transition-all duration-200 shrink-0 cursor-pointer ${
               activeFilter === tab.key
                 ? "bg-[#141715] text-[#FAF8F3] shadow-sm"
@@ -134,8 +167,83 @@ export function OrchardGallerySection() {
         ))}
       </div>
 
-      {/* Dynamic Editorial Photo Mosaic */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5 auto-rows-[220px] sm:auto-rows-[260px]">
+      {/* MOBILE CAROUSEL (md:hidden): Smooth Snap Swipeable Deck */}
+      <div className="md:hidden space-y-4">
+        <div
+          ref={carouselRef}
+          onScroll={handleCarouselScroll}
+          className="flex items-stretch gap-4 overflow-x-auto snap-x snap-mandatory pb-2 -mx-4 px-4 scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        >
+          {filteredPhotos.map((photo) => (
+            <div
+              key={photo.id}
+              onClick={() => setLightboxPhoto(photo)}
+              className="w-[82vw] max-w-[340px] shrink-0 snap-center relative rounded-2xl overflow-hidden border border-[rgba(139,130,88,0.22)] bg-[#F2EDE2] shadow-sm cursor-pointer"
+            >
+              <div className="aspect-[4/3] w-full relative overflow-hidden">
+                <img
+                  src={photo.imageUrl}
+                  alt={photo.title}
+                  data-gallery-slot={photo.placeholderId}
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/15 to-transparent" />
+                <span className="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-black/45 backdrop-blur-md text-[10px] font-mono uppercase tracking-wider text-white">
+                  {photo.categoryLabel}
+                </span>
+                <div className="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/45 backdrop-blur-md flex items-center justify-center text-white">
+                  <Maximize2 className="w-3.5 h-3.5" />
+                </div>
+                <div className="absolute bottom-3 left-3 right-3 text-white space-y-0.5">
+                  <h4 className="font-serif text-base font-bold leading-snug">{photo.title}</h4>
+                  <p className="text-[11px] text-white/80 line-clamp-1">{photo.caption}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Mobile Carousel Controls */}
+        <div className="flex items-center justify-between px-1">
+          <div className="flex items-center gap-1.5">
+            {filteredPhotos.map((_, idx) => (
+              <button
+                key={idx}
+                type="button"
+                onClick={() => scrollToSlide(idx)}
+                aria-label={`Slide ${idx + 1}`}
+                className={`h-1.5 rounded-full transition-all cursor-pointer ${
+                  mobileSlide === idx ? "w-5 bg-[#141715]" : "w-1.5 bg-[#8B8258]/30"
+                }`}
+              />
+            ))}
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => scrollToSlide(mobileSlide - 1)}
+              disabled={mobileSlide === 0}
+              className="w-8 h-8 rounded-full border border-[rgba(139,130,88,0.25)] bg-white flex items-center justify-center text-[#141715] disabled:opacity-35 cursor-pointer"
+              aria-label="Previous photo"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            <button
+              type="button"
+              onClick={() => scrollToSlide(mobileSlide + 1)}
+              disabled={mobileSlide >= filteredPhotos.length - 1}
+              className="w-8 h-8 rounded-full border border-[rgba(139,130,88,0.25)] bg-white flex items-center justify-center text-[#141715] disabled:opacity-35 cursor-pointer"
+              aria-label="Next photo"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* DESKTOP EDITORIAL PHOTO MOSAIC (hidden md:grid) */}
+      <div className="hidden md:grid md:grid-cols-3 lg:grid-cols-4 gap-5 auto-rows-[260px]">
         {filteredPhotos.map((photo) => (
           <div
             key={photo.id}

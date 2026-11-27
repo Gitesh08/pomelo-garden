@@ -17,10 +17,20 @@ export function OurStorySection() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
-          
-          {/* Left Column: Layered Editorial Photo Composition (User Image Placeholders) */}
-          <div className="lg:col-span-6 relative pb-12 sm:pb-8 pr-1 sm:pr-0">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-y-8 lg:gap-x-14 lg:gap-y-6 items-start">
+          {/* 1. Heading Block (Mobile: 1st | Desktop: Top-Right) */}
+          <div className="lg:col-span-6 lg:col-start-7 lg:row-start-1 space-y-2 lg:self-end">
+            <div className="inline-flex items-center gap-2 text-xs font-mono uppercase tracking-widest font-semibold text-[#788E73]">
+              <Sprout className="w-4 h-4 text-[#7BA23F]" />
+              <span>The Grove Roots</span>
+            </div>
+            <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl text-[#141715] tracking-tight leading-tight">
+              Where Rare Citrus Flourishes and Time Slows Down
+            </h2>
+          </div>
+
+          {/* 2. Layered Editorial Photo Composition (Mobile: 2nd | Desktop: Full Left Column) */}
+          <div className="lg:col-span-6 lg:col-start-1 lg:row-start-1 lg:row-span-2 lg:self-center relative pb-12 sm:pb-8 pr-1 sm:pr-0">
             {/* Main Primary Image (Back Image) */}
             <div className="relative rounded-3xl overflow-hidden shadow-lg border border-[rgba(139,130,88,0.25)] bg-[#FAF8F3] aspect-[4/3] group">
               <img
@@ -74,18 +84,8 @@ export function OurStorySection() {
             </div>
           </div>
 
-          {/* Right Column: Narrative Storytelling & Heritage Pillars */}
-          <div className="lg:col-span-6 space-y-6">
-            <div className="space-y-2">
-              <div className="inline-flex items-center gap-2 text-xs font-mono uppercase tracking-widest font-semibold text-[#788E73]">
-                <Sprout className="w-4 h-4 text-[#7BA23F]" />
-                <span>The Grove Roots</span>
-              </div>
-              <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl text-[#141715] tracking-tight leading-tight">
-                Where Rare Citrus Flourishes and Time Slows Down
-              </h2>
-            </div>
-
+          {/* 3. Narrative Content & Heritage Pillars (Mobile: 3rd | Desktop: Bottom-Right) */}
+          <div className="lg:col-span-6 lg:col-start-7 lg:row-start-2 lg:self-start space-y-6">
             <div className="space-y-4 text-xs sm:text-sm text-[#56635A] leading-relaxed font-sans">
               <p>
                 Tucked away in the quiet agrarian hills of Saphale, just 90 minutes from Mumbai, Pomelo Garden

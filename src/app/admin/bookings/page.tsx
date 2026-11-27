@@ -1,6 +1,6 @@
-﻿"use client";
+"use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import {
   BadgeCheck,
@@ -34,7 +34,13 @@ import {
   Save,
 } from "lucide-react";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
-import { useResortStore, BookingItem } from "@/lib/resort-store";
+import {
+  useResortStore,
+  BookingItem,
+  getTodayISO,
+  addDaysToISO,
+  checkRoomOccupied,
+} from "@/lib/resort-store";
 
 export default function BookingsAndIdVaultPage() {
   const { bookings, packages, rooms, addBooking, updateBookingStatus, updateBooking } = useResortStore();
@@ -69,8 +75,8 @@ export default function BookingsAndIdVaultPage() {
   const [editNonVegCount, setEditNonVegCount] = useState<number>(2);
   const [editPackageId, setEditPackageId] = useState("picnic");
   const [editRooms, setEditRooms] = useState<string[]>(["AC-101"]);
-  const [editCheckIn, setEditCheckIn] = useState("2026-11-26");
-  const [editCheckOut, setEditCheckOut] = useState("2026-11-27");
+  const [editCheckIn, setEditCheckIn] = useState(() => getTodayISO());
+  const [editCheckOut, setEditCheckOut] = useState(() => addDaysToISO(getTodayISO(), 1));
   const [editStatus, setEditStatus] = useState<BookingItem["status"]>("Confirmed");
   const [editTotalAmount, setEditTotalAmount] = useState<number>(0);
   const [editAdvancePaid, setEditAdvancePaid] = useState<number>(0);
@@ -86,10 +92,10 @@ export default function BookingsAndIdVaultPage() {
   const [mealPreference, setMealPreference] = useState<"Veg" | "Non-Veg" | "Mixed">("Non-Veg");
   const [vegCount, setVegCount] = useState<number>(0);
   const [nonVegCount, setNonVegCount] = useState<number>(2);
-  const [packageId, setPackageId] = useState("picnic");
+  const [packageId, setPackageId] = useState("group-overnight");
   const [selectedRooms, setSelectedRooms] = useState<string[]>(["AC-101"]);
-  const [checkIn, setCheckIn] = useState("2026-11-26");
-  const [checkOut, setCheckOut] = useState("2026-11-27");
+  const [checkIn, setCheckIn] = useState(() => getTodayISO());
+  const [checkOut, setCheckOut] = useState(() => addDaysToISO(getTodayISO(), 1));
   const [collectIdNow, setCollectIdNow] = useState(false);
   const [idType, setIdType] = useState<BookingItem["idType"]>("Aadhaar");
   const [idLast4, setIdLast4] = useState("");
@@ -97,6 +103,56 @@ export default function BookingsAndIdVaultPage() {
   const [customTotal, setCustomTotal] = useState<number | null>(null);
   const [paymentMode, setPaymentMode] = useState<BookingItem["paymentMode"]>("UPI");
   const [notes, setNotes] = useState("");
+
+  // Handler to open New Booking with clean synced state
+  const handleOpenNewBooking = () => {
+    const today = getTodayISO();
+    const tomorrow = addDaysToISO(today, 1);
+    setCheckIn(today);
+    setCheckOut(tomorrow);
+    setPackageId("group-overnight");
+    setGuestName("");
+    setPhone("");
+    setCity("Mumbai");
+    setAdults(2);
+    setChildren(0);
+    setMealPreference("Non-Veg");
+    setVegCount(0);
+    setNonVegCount(2);
+    setCustomTotal(null);
+    setCollectIdNow(false);
+    setIdLast4("");
+    setAdvancePaid(3000);
+    setNotes("");
+
+    // Find first available room for today
+    const freeRoom = rooms.find(
+      (r) => !checkRoomOccupied(r.id, today, tomorrow, bookings).isOccupied
+    );
+    setSelectedRooms([freeRoom ? freeRoom.id : rooms[0]?.id || "AC-101"]);
+    setDrawerOpen(true);
+  };
+
+  // Support 1-click allocation from Dashboard matrix (?action=new&room=AC-101&date=2026-11-28)
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const action = params.get("action");
+      const paramRoom = params.get("room");
+      const paramDate = params.get("date");
+      if (action === "new" || paramRoom || paramDate) {
+        const today = getTodayISO();
+        const start = paramDate && paramDate >= today ? paramDate : today;
+        const end = addDaysToISO(start, 1);
+        setCheckIn(start);
+        setCheckOut(end);
+        if (paramRoom) {
+          setSelectedRooms([paramRoom]);
+        }
+        setDrawerOpen(true);
+      }
+    }
+  }, []);
 
   // Toast
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -165,7 +221,7 @@ export default function BookingsAndIdVaultPage() {
       idType: collectIdType,
       idLast4: collectIdLast4 || "4892",
     });
-    showToast(`âœ“ ID recorded for ${collectIdBooking.guestName}!`);
+    showToast(`✓ ID recorded for ${collectIdBooking.guestName}!`);
     setCollectIdBooking(null);
   };
 
@@ -211,7 +267,7 @@ export default function BookingsAndIdVaultPage() {
     setCustomTotal(null);
     setCollectIdNow(false);
     setIdLast4("");
-    showToast(`âœ“ Booking ${newBooking.id} created for ${newBooking.guestName}!`);
+    showToast(`✓ Booking ${newBooking.id} created for ${newBooking.guestName}!`);
   };
 
   // Open Safe Edit Drawer
@@ -294,7 +350,7 @@ export default function BookingsAndIdVaultPage() {
       notes: editNotes.trim(),
     });
 
-    showToast(`âœ“ Reservation ${editingBooking.id} updated safely!`);
+    showToast(`✓ Reservation ${editingBooking.id} updated safely!`);
     setEditingBooking(null);
   };
 
@@ -405,22 +461,47 @@ export default function BookingsAndIdVaultPage() {
 
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1">
-                      <label className="font-semibold text-gray-600">Check-In Date *</label>
+                      <div className="flex items-center justify-between">
+                        <label className="font-semibold text-gray-600">Check-In Date *</label>
+                        <span className="text-[10px] font-mono text-gray-400">Min Today</span>
+                      </div>
                       <input
                         type="date"
                         required
+                        min={getTodayISO()}
                         value={editCheckIn}
-                        onChange={(e) => setEditCheckIn(e.target.value)}
+                        onChange={(e) => {
+                          let val = e.target.value;
+                          if (!val) return;
+                          const today = getTodayISO();
+                          if (val < today) val = today;
+                          setEditCheckIn(val);
+                          if (editPackageId === "picnic") {
+                            setEditCheckOut(val);
+                          } else if (editCheckOut <= val) {
+                            setEditCheckOut(addDaysToISO(val, 1));
+                          }
+                        }}
                         className="w-full h-10 px-3 rounded-xl border border-[#E2E7E4] font-mono focus:border-[#1E6F50]"
                       />
                     </div>
                     <div className="space-y-1">
-                      <label className="font-semibold text-gray-600">Check-Out Date *</label>
+                      <div className="flex items-center justify-between">
+                        <label className="font-semibold text-gray-600">Check-Out Date *</label>
+                        <span className="text-[10px] font-mono text-gray-400">From Check-In</span>
+                      </div>
                       <input
                         type="date"
                         required
+                        min={editCheckIn || getTodayISO()}
                         value={editCheckOut}
-                        onChange={(e) => setEditCheckOut(e.target.value)}
+                        onChange={(e) => {
+                          let val = e.target.value;
+                          if (!val) return;
+                          const minAllowed = editCheckIn || getTodayISO();
+                          if (val < minAllowed) val = minAllowed;
+                          setEditCheckOut(val);
+                        }}
                         className="w-full h-10 px-3 rounded-xl border border-[#E2E7E4] font-mono focus:border-[#1E6F50]"
                       />
                     </div>
@@ -598,6 +679,15 @@ export default function BookingsAndIdVaultPage() {
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                     {rooms.map((room) => {
                       const isSelected = editRooms.includes(room.id);
+                      const conflict = checkRoomOccupied(
+                        room.id,
+                        editCheckIn,
+                        editCheckOut,
+                        bookings,
+                        editingBooking?.id
+                      );
+                      const isOccupied = conflict.isOccupied;
+
                       return (
                         <button
                           key={room.id}
@@ -605,18 +695,54 @@ export default function BookingsAndIdVaultPage() {
                           onClick={() => handleToggleEditRoom(room.id)}
                           className={`p-2.5 rounded-xl border text-left cursor-pointer transition-all ${
                             isSelected
-                              ? "bg-[#101814] text-white border-[#101814] shadow-xs"
+                              ? isOccupied
+                                ? "bg-amber-900 text-white border-amber-800 shadow-xs"
+                                : "bg-[#101814] text-white border-[#101814] shadow-xs"
+                              : isOccupied
+                              ? "bg-amber-50/60 text-gray-700 border-amber-200 hover:bg-amber-100/50"
                               : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
                           }`}
                         >
-                          <span className="font-bold block text-xs">{room.name}</span>
+                          <div className="flex items-center justify-between">
+                            <span className="font-bold block text-xs">{room.name}</span>
+                            {isOccupied ? (
+                              <span className="px-1.5 py-0.2 rounded bg-amber-200 text-amber-950 font-mono text-[9px] font-bold">
+                                Booked
+                              </span>
+                            ) : (
+                              <span className={`px-1.5 py-0.2 rounded font-mono text-[9px] font-bold ${
+                                isSelected ? "bg-white/20 text-[#89D6B1]" : "bg-[#1E6F50]/10 text-[#1E6F50]"
+                              }`}>
+                                Free
+                              </span>
+                            )}
+                          </div>
                           <span className={`text-[10px] block truncate ${isSelected ? "text-gray-300" : "text-gray-500"}`}>
                             {room.type}
                           </span>
+                          {isOccupied && conflict.conflictBooking && (
+                            <span className="text-[9px] text-amber-600 block truncate mt-0.5">
+                              {conflict.conflictBooking.guestName}
+                            </span>
+                          )}
                         </button>
                       );
                     })}
                   </div>
+
+                  {editRooms.some((rId) =>
+                    checkRoomOccupied(rId, editCheckIn, editCheckOut, bookings, editingBooking?.id).isOccupied
+                  ) && (
+                    <div className="p-2.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs flex items-start gap-2 mt-2">
+                      <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                      <div>
+                        <span className="font-bold block">Room Allocation Notice</span>
+                        <span className="text-[11px] text-amber-800">
+                          One or more selected rooms overlap with another booking on these dates. Please review to avoid duplicate occupancy.
+                        </span>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* 6. Financial Ledger & Status */}
@@ -660,7 +786,7 @@ export default function BookingsAndIdVaultPage() {
                   <div className="p-3.5 bg-gray-50 rounded-xl space-y-3 border border-gray-200">
                     <div className="grid grid-cols-2 gap-3">
                       <div className="space-y-1">
-                        <label className="font-semibold text-gray-600">Total Tariff (â‚¹)</label>
+                        <label className="font-semibold text-gray-600">Total Tariff (₹)</label>
                         <input
                           type="number"
                           value={editTotalAmount}
@@ -669,7 +795,7 @@ export default function BookingsAndIdVaultPage() {
                         />
                       </div>
                       <div className="space-y-1">
-                        <label className="font-semibold text-gray-600">Advance Received (â‚¹)</label>
+                        <label className="font-semibold text-gray-600">Advance Received (₹)</label>
                         <input
                           type="number"
                           value={editAdvancePaid}
@@ -682,7 +808,7 @@ export default function BookingsAndIdVaultPage() {
                     <div className="pt-2 border-t border-gray-200 flex items-center justify-between text-xs">
                       <span className="font-bold text-gray-700">Calculated Balance Due:</span>
                       <span className={`font-mono font-bold text-sm ${editTotalAmount - editAdvancePaid > 0 ? "text-[#E06354]" : "text-[#1E6F50]"}`}>
-                        â‚¹{Math.max(0, editTotalAmount - editAdvancePaid).toLocaleString("en-IN")}
+                        ₹{Math.max(0, editTotalAmount - editAdvancePaid).toLocaleString("en-IN")}
                       </span>
                     </div>
                   </div>
@@ -727,7 +853,7 @@ export default function BookingsAndIdVaultPage() {
           <div>
             <div className="flex items-center gap-2 text-[11px] font-mono uppercase tracking-wider text-gray-500 mb-1">
               <span>Saphale Orchard Campus</span>
-              <span>â€º</span>
+              <span>›</span>
               <span className="text-[#1E6F50] font-semibold">Bookings & Guest ID Vault</span>
             </div>
             <div className="flex items-center gap-3">
@@ -744,7 +870,7 @@ export default function BookingsAndIdVaultPage() {
           <div className="flex items-center gap-2 sm:gap-2.5 flex-wrap">
             <button
               type="button"
-              onClick={() => setDrawerOpen(true)}
+              onClick={handleOpenNewBooking}
               className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-4 py-2.5 sm:py-2 rounded-xl bg-[#101814] hover:bg-black text-white text-xs font-semibold uppercase tracking-wider transition-all shadow-xs cursor-pointer active:scale-98"
             >
               <Plus className="w-4 h-4 text-[#89D6B1]" />
@@ -958,7 +1084,7 @@ export default function BookingsAndIdVaultPage() {
                     </h3>
                     <div className="text-xs text-gray-500 mt-0.5 flex items-center gap-1.5">
                       <span>{b.city}</span>
-                      <span>â€¢</span>
+                      <span>•</span>
                       <span className="font-mono text-[11px]">{b.phone}</span>
                     </div>
                   </div>
@@ -1000,7 +1126,7 @@ export default function BookingsAndIdVaultPage() {
                     </span>
                     <span className="text-[#1E6F50] uppercase font-bold text-[10px]">
                       {b.mealPreference === "Mixed"
-                        ? `Mixed (${b.vegCount || 0} Veg Â· ${b.nonVegCount || 0} Non-Veg)`
+                        ? `Mixed (${b.vegCount || 0} Veg · ${b.nonVegCount || 0} Non-Veg)`
                         : b.mealPreference === "Veg"
                         ? `All Veg (${b.adults + b.children} Pax)`
                         : `All Non-Veg (${b.adults + b.children} Pax)`}
@@ -1025,20 +1151,20 @@ export default function BookingsAndIdVaultPage() {
                   <div className="space-y-0.5">
                     <span className="text-[10px] text-gray-500 block uppercase">Total</span>
                     <span className="text-xs font-bold text-[#161D1A]">
-                      â‚¹{b.totalAmount.toLocaleString("en-IN")}
+                      ₹{b.totalAmount.toLocaleString("en-IN")}
                     </span>
                   </div>
                   <div className="space-y-0.5 border-x border-gray-200">
                     <span className="text-[10px] text-gray-500 block uppercase">Adv ({b.paymentMode})</span>
                     <span className="text-xs font-semibold text-gray-700">
-                      â‚¹{b.advancePaid.toLocaleString("en-IN")}
+                      ₹{b.advancePaid.toLocaleString("en-IN")}
                     </span>
                   </div>
                   <div className="space-y-0.5">
                     <span className="text-[10px] text-gray-500 block uppercase">Balance</span>
                     {b.balanceDue > 0 ? (
                       <span className="text-xs font-bold text-[#E06354]">
-                        â‚¹{b.balanceDue.toLocaleString("en-IN")}
+                        ₹{b.balanceDue.toLocaleString("en-IN")}
                       </span>
                     ) : (
                       <span className="text-xs font-bold text-[#1E6F50]">
@@ -1094,7 +1220,7 @@ export default function BookingsAndIdVaultPage() {
                         type="button"
                         onClick={() => {
                           updateBookingStatus(b.id, "Checked-In");
-                          showToast(`âœ“ Folio ${b.id} marked as Checked-In!`);
+                          showToast(`✓ Folio ${b.id} marked as Checked-In!`);
                         }}
                         className="px-3 py-1.5 bg-[#1E6F50] hover:bg-[#185e43] text-white rounded-lg font-mono text-xs font-bold flex items-center gap-1 cursor-pointer"
                       >
@@ -1108,7 +1234,7 @@ export default function BookingsAndIdVaultPage() {
                         type="button"
                         onClick={() => {
                           updateBookingStatus(b.id, "Completed");
-                          showToast(`âœ“ Folio ${b.id} marked as Completed & Checked-Out!`);
+                          showToast(`✓ Folio ${b.id} marked as Completed & Checked-Out!`);
                         }}
                         className="px-3 py-1.5 bg-gray-800 text-white rounded-lg font-mono text-xs font-bold cursor-pointer"
                       >
@@ -1121,7 +1247,7 @@ export default function BookingsAndIdVaultPage() {
                         type="button"
                         onClick={() => {
                           updateBookingStatus(b.id, "Confirmed");
-                          showToast(`âœ“ Folio ${b.id} confirmed with advance!`);
+                          showToast(`✓ Folio ${b.id} confirmed with advance!`);
                         }}
                         className="px-3 py-1.5 bg-[#1E6F50] text-white rounded-lg font-mono text-xs font-bold cursor-pointer"
                       >
@@ -1190,7 +1316,7 @@ export default function BookingsAndIdVaultPage() {
                         </div>
                         <div className="text-[10px] font-mono text-[#1E6F50] uppercase mt-0.5 font-semibold">
                           {b.mealPreference === "Mixed"
-                            ? `Mixed: ${b.vegCount || 0} Veg Â· ${b.nonVegCount || 0} Non-Veg`
+                            ? `Mixed: ${b.vegCount || 0} Veg · ${b.nonVegCount || 0} Non-Veg`
                             : `${b.mealPreference} Preference`}
                         </div>
                       </td>
@@ -1221,7 +1347,7 @@ export default function BookingsAndIdVaultPage() {
                             >
                               <CheckCircle2 className="w-3.5 h-3.5 text-[#1E6F50]" />
                               <span>
-                                {b.idType} â€¢â€¢â€¢â€¢ {b.idLast4}
+                                {b.idType} •••• {b.idLast4}
                               </span>
                               <Eye className="w-3 h-3" />
                             </button>
@@ -1253,14 +1379,14 @@ export default function BookingsAndIdVaultPage() {
                       {/* Payment Ledger */}
                       <td className="px-5 py-3.5 align-top text-right">
                         <div className="font-mono font-bold text-sm text-[#161D1A]">
-                          â‚¹{b.totalAmount.toLocaleString("en-IN")}
+                          ₹{b.totalAmount.toLocaleString("en-IN")}
                         </div>
                         <div className="font-mono text-[11px] text-gray-500">
-                          Adv: â‚¹{b.advancePaid.toLocaleString("en-IN")} ({b.paymentMode})
+                          Adv: ₹{b.advancePaid.toLocaleString("en-IN")} ({b.paymentMode})
                         </div>
                         {b.balanceDue > 0 ? (
                           <span className="font-mono text-[10px] font-bold px-1.5 py-0.5 rounded bg-[#E06354]/10 text-[#E06354] inline-block mt-0.5">
-                            â‚¹{b.balanceDue.toLocaleString("en-IN")} Due
+                            ₹{b.balanceDue.toLocaleString("en-IN")} Due
                           </span>
                         ) : (
                           <span className="font-mono text-[10px] font-bold px-1.5 py-0.5 rounded bg-[#1E6F50]/10 text-[#1E6F50] inline-block mt-0.5">
@@ -1407,20 +1533,76 @@ export default function BookingsAndIdVaultPage() {
 
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1">
-                      <label className="font-semibold text-gray-600">Check-In</label>
+                      <div className="flex items-center justify-between">
+                        <label className="font-semibold text-gray-600">Check-In</label>
+                        <div className="flex items-center gap-1">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const t = getTodayISO();
+                              setCheckIn(t);
+                              if (packageId === "picnic") {
+                                setCheckOut(t);
+                              } else if (checkOut <= t) {
+                                setCheckOut(addDaysToISO(t, 1));
+                              }
+                            }}
+                            className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-gray-100 hover:bg-[#1E6F50] hover:text-white transition-colors cursor-pointer"
+                          >
+                            Today
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const tm = addDaysToISO(getTodayISO(), 1);
+                              setCheckIn(tm);
+                              if (packageId === "picnic") {
+                                setCheckOut(tm);
+                              } else if (checkOut <= tm) {
+                                setCheckOut(addDaysToISO(tm, 1));
+                              }
+                            }}
+                            className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-gray-100 hover:bg-[#1E6F50] hover:text-white transition-colors cursor-pointer"
+                          >
+                            Tmrw
+                          </button>
+                        </div>
+                      </div>
                       <input
                         type="date"
+                        min={getTodayISO()}
                         value={checkIn}
-                        onChange={(e) => setCheckIn(e.target.value)}
+                        onChange={(e) => {
+                          let val = e.target.value;
+                          if (!val) return;
+                          const today = getTodayISO();
+                          if (val < today) val = today;
+                          setCheckIn(val);
+                          if (packageId === "picnic") {
+                            setCheckOut(val);
+                          } else if (checkOut <= val) {
+                            setCheckOut(addDaysToISO(val, 1));
+                          }
+                        }}
                         className="w-full h-10 px-3 rounded-xl border border-[#E2E7E4] font-mono focus:border-[#1E6F50]"
                       />
                     </div>
                     <div className="space-y-1">
-                      <label className="font-semibold text-gray-600">Check-Out</label>
+                      <div className="flex items-center justify-between">
+                        <label className="font-semibold text-gray-600">Check-Out</label>
+                        <span className="text-[10px] font-mono text-gray-400">From Check-In</span>
+                      </div>
                       <input
                         type="date"
+                        min={checkIn || getTodayISO()}
                         value={checkOut}
-                        onChange={(e) => setCheckOut(e.target.value)}
+                        onChange={(e) => {
+                          let val = e.target.value;
+                          if (!val) return;
+                          const minAllowed = checkIn || getTodayISO();
+                          if (val < minAllowed) val = minAllowed;
+                          setCheckOut(val);
+                        }}
                         className="w-full h-10 px-3 rounded-xl border border-[#E2E7E4] font-mono focus:border-[#1E6F50]"
                       />
                     </div>
@@ -1430,7 +1612,15 @@ export default function BookingsAndIdVaultPage() {
                     <label className="font-semibold text-gray-600">Package</label>
                     <select
                       value={packageId}
-                      onChange={(e) => setPackageId(e.target.value)}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setPackageId(val);
+                        if (val === "picnic") {
+                          setCheckOut(checkIn);
+                        } else if (checkOut <= checkIn) {
+                          setCheckOut(addDaysToISO(checkIn, 1));
+                        }
+                      }}
                       className="w-full h-10 px-3 rounded-xl border border-[#E2E7E4] bg-white font-medium focus:border-[#1E6F50]"
                     >
                       {packages.map((pkg) => (
@@ -1441,14 +1631,23 @@ export default function BookingsAndIdVaultPage() {
                     </select>
                   </div>
 
-                  {/* Room Selection Chips */}
+                  {/* Room Selection Chips with Live Conflict Detection */}
                   <div className="space-y-1.5">
-                    <label className="font-semibold text-gray-600 block">
-                      Select Rooms (Tap to select)
-                    </label>
+                    <div className="flex items-center justify-between">
+                      <label className="font-semibold text-gray-600 block">
+                        Select Rooms (Tap to select)
+                      </label>
+                      <span className="font-mono text-[10px] text-gray-500">
+                        {selectedRooms.length} {selectedRooms.length === 1 ? "Room" : "Rooms"} Selected
+                      </span>
+                    </div>
+
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                       {rooms.map((r) => {
                         const isChecked = selectedRooms.includes(r.id);
+                        const conflict = checkRoomOccupied(r.id, checkIn, checkOut, bookings);
+                        const isOccupied = conflict.isOccupied;
+
                         return (
                           <button
                             key={r.id}
@@ -1460,20 +1659,60 @@ export default function BookingsAndIdVaultPage() {
                                 setSelectedRooms([...selectedRooms, r.id]);
                               }
                             }}
-                            className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
+                            className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer relative ${
                               isChecked
-                                ? "bg-[#F4FBF6] border-[#1E6F50] text-[#1E6F50] font-bold shadow-2xs"
+                                ? isOccupied
+                                  ? "bg-amber-50 border-amber-500 text-amber-900 font-bold shadow-2xs"
+                                  : "bg-[#F4FBF6] border-[#1E6F50] text-[#1E6F50] font-bold shadow-2xs"
+                                : isOccupied
+                                ? "bg-amber-50/50 border-amber-200 text-gray-700 hover:bg-amber-100/50"
                                 : "bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100"
                             }`}
                           >
-                            <span className="font-mono text-xs block">{r.name}</span>
-                            <span className="text-[10px] text-gray-500 font-normal truncate block">
+                            <div className="flex items-center justify-between">
+                              <span className="font-mono text-xs block">{r.name}</span>
+                              {isOccupied ? (
+                                <span className="px-1.5 py-0.2 rounded bg-amber-100 text-amber-800 font-mono text-[9px] font-bold">
+                                  Booked
+                                </span>
+                              ) : (
+                                <span
+                                  className={`px-1.5 py-0.2 rounded font-mono text-[9px] font-bold ${
+                                    isChecked
+                                      ? "bg-[#1E6F50] text-white"
+                                      : "bg-[#1E6F50]/10 text-[#1E6F50]"
+                                  }`}
+                                >
+                                  Free
+                                </span>
+                              )}
+                            </div>
+                            <span className="text-[10px] text-gray-500 font-normal truncate block mt-0.5">
                               {r.category.split(" ")[0]} {r.type}
                             </span>
+                            {isOccupied && conflict.conflictBooking && (
+                              <span className="text-[9px] text-amber-700 truncate block mt-0.5 font-medium">
+                                {conflict.conflictBooking.guestName}
+                              </span>
+                            )}
                           </button>
                         );
                       })}
                     </div>
+
+                    {selectedRooms.some(
+                      (rId) => checkRoomOccupied(rId, checkIn, checkOut, bookings).isOccupied
+                    ) && (
+                      <div className="p-2.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs flex items-start gap-2 mt-2">
+                        <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                        <div>
+                          <span className="font-bold block">Double-Booking Conflict Notice</span>
+                          <span className="text-[11px] text-amber-800">
+                            One or more selected rooms are already allocated to another guest during these dates.
+                          </span>
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   {/* Headcount Steppers & Meal Preference */}
@@ -1636,7 +1875,7 @@ export default function BookingsAndIdVaultPage() {
                   <div className="p-3.5 bg-gray-50 rounded-xl space-y-3 border border-gray-200">
                     <div className="grid grid-cols-2 gap-3">
                       <div className="space-y-1">
-                        <label className="font-semibold text-gray-600">Total Tariff (â‚¹)</label>
+                        <label className="font-semibold text-gray-600">Total Tariff (₹)</label>
                         <input
                           type="number"
                           value={finalTotal}
@@ -1645,7 +1884,7 @@ export default function BookingsAndIdVaultPage() {
                         />
                       </div>
                       <div className="space-y-1">
-                        <label className="font-semibold text-gray-600">Advance Received (â‚¹)</label>
+                        <label className="font-semibold text-gray-600">Advance Received (₹)</label>
                         <input
                           type="number"
                           value={advancePaid}
@@ -1673,7 +1912,7 @@ export default function BookingsAndIdVaultPage() {
                       <div className="font-mono text-right">
                         <span className="text-[10px] text-gray-500 block uppercase">Remaining Due</span>
                         <span className={`text-sm font-bold ${balanceDue > 0 ? "text-[#E06354]" : "text-[#1E6F50]"}`}>
-                          â‚¹{balanceDue.toLocaleString("en-IN")}
+                          ₹{balanceDue.toLocaleString("en-IN")}
                         </span>
                       </div>
                     </div>

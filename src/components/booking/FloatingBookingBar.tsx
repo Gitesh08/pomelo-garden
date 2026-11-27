@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Calendar, Users, ArrowRight, ChevronDown } from "lucide-react";
+import { Calendar, ArrowRight } from "lucide-react";
 
 interface FloatingBookingBarProps {
   startDate: string;
@@ -34,7 +34,7 @@ function formatDateShort(dateStr: string): string {
   if (parts.length !== 3) return dateStr;
   const m = parseInt(parts[1], 10) - 1;
   const d = parseInt(parts[2], 10);
-  return `${d} ${MONTH_SHORT[m] || ""}`;
+  return `${MONTH_SHORT[m] || ""} ${d}`;
 }
 
 export function FloatingBookingBar({
@@ -48,83 +48,47 @@ export function FloatingBookingBar({
 }: FloatingBookingBarProps) {
   const [guestsOpen, setGuestsOpen] = useState(false);
 
-  const nights = React.useMemo(() => {
-    if (!startDate || !endDate) return 1;
-    if (startDate === endDate) return 1;
-    const [sy, sm, sd] = startDate.split("-").map(Number);
-    const [ey, em, ed] = endDate.split("-").map(Number);
-    const diff = Math.round((Date.UTC(ey, em - 1, ed) - Date.UTC(sy, sm - 1, sd)) / (1000 * 60 * 60 * 24));
-    return diff > 0 ? diff : 1;
-  }, [startDate, endDate]);
+  const totalGuests = adultCount + childCount;
 
   const datesDisplay = React.useMemo(() => {
     if (!startDate) return "Select Dates";
     const s = formatDateShort(startDate);
-    if (!endDate || startDate === endDate) return `${s} (Day Picnic)`;
+    if (!endDate || startDate === endDate) return s;
     const e = formatDateShort(endDate);
-    return `${s} to ${e} (${nights} ${nights === 1 ? "Night" : "Nights"})`;
-  }, [startDate, endDate, nights]);
+    return `${s} - ${e}`;
+  }, [startDate, endDate]);
 
-  const guestsSummary = React.useMemo(() => {
-    return `${adultCount} ${adultCount === 1 ? "Adult" : "Adults"}${
-      childCount > 0 ? `, ${childCount} Child` : ""
-    }`;
-  }, [adultCount, childCount]);
+  const guestsLabel = `${totalGuests} ${totalGuests === 1 ? "Guest" : "Guests"}`;
 
   return (
-    <div className="w-full max-w-4xl mx-auto relative z-30">
+    <div className="w-full flex justify-center relative z-30">
       {/* =========================================================================
-          DESKTOP LUXURY BAR (md:flex)
-          Cheval Blanc & Four Seasons Minimalist Reservation Dock
+          DESKTOP MINIMALIST PILL (hidden md:flex)
          ========================================================================= */}
-      <div className="hidden md:flex bg-white/95 backdrop-blur-md rounded-2xl border border-[rgba(139,130,88,0.22)] shadow-xl p-2 items-center gap-2">
-        {/* Field 1: Dates Trigger */}
+      <div className="hidden md:flex items-center gap-2 bg-[#FAF8F3]/95 backdrop-blur-md rounded-xl shadow-2xl border border-white/40 p-1.5 pl-4 relative">
+        {/* Dates Trigger */}
         <button
           type="button"
           onClick={onOpenCalendar}
-          className="flex-1 px-4 py-3 rounded-xl hover:bg-[#F2EDE2]/60 transition-colors text-left flex items-center gap-3 cursor-pointer group"
+          className="text-xs font-medium text-[#141715] hover:text-[#B93A2B] transition-colors cursor-pointer whitespace-nowrap px-1 py-1.5"
         >
-          <div className="w-9 h-9 rounded-lg bg-[#FAF8F3] border border-[rgba(139,130,88,0.2)] flex items-center justify-center shrink-0 group-hover:bg-white transition-colors">
-            <Calendar className="w-4 h-4 text-[#E06354]" />
-          </div>
-          <div className="flex flex-col min-w-0">
-            <span className="text-[10px] font-mono uppercase tracking-wider text-[#788E73] font-bold">
-              Check-In to Check-Out
-            </span>
-            <span className={`text-sm font-bold font-sans truncate ${startDate ? "text-[#141715]" : "text-[#788E73]"}`}>
-              {startDate ? datesDisplay : "Select Dates"}
-            </span>
-          </div>
+          {datesDisplay}
         </button>
 
-        <div className="w-px h-8 bg-gray-200" />
+        <span className="text-gray-400 text-xs select-none">·</span>
 
-        {/* Field 2: Guests Trigger */}
-        <div className="relative flex-1">
+        {/* Guests Trigger + Upward Popover */}
+        <div className="relative">
           <button
             type="button"
             onClick={() => setGuestsOpen(!guestsOpen)}
-            className="w-full px-4 py-3 rounded-xl hover:bg-[#F2EDE2]/60 transition-colors text-left flex items-center justify-between cursor-pointer group"
+            className="text-xs font-medium text-[#141715] hover:text-[#B93A2B] transition-colors cursor-pointer whitespace-nowrap px-1 py-1.5"
           >
-            <div className="flex items-center gap-3 min-w-0">
-              <div className="w-9 h-9 rounded-lg bg-[#FAF8F3] border border-[rgba(139,130,88,0.2)] flex items-center justify-center shrink-0 group-hover:bg-white transition-colors">
-                <Users className="w-4 h-4 text-[#7BA23F]" />
-              </div>
-              <div className="flex flex-col min-w-0">
-                <span className="text-[10px] font-mono uppercase tracking-wider text-[#788E73] font-bold">
-                  Guests
-                </span>
-                <span className="text-sm font-bold text-[#141715] truncate">
-                  {guestsSummary}
-                </span>
-              </div>
-            </div>
-            <ChevronDown className="w-4 h-4 text-gray-400 group-hover:text-black transition-colors shrink-0" />
+            {guestsLabel}
           </button>
 
-          {/* Guests Popover */}
           {guestsOpen && (
-            <div className="absolute top-full left-0 mt-2 w-72 bg-white rounded-xl shadow-2xl border border-[#E2E7E4] p-4 z-50 space-y-4 animate-in fade-in duration-150">
+            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 w-72 bg-white rounded-xl shadow-2xl border border-[#E2E7E4] p-4 z-50 space-y-4 animate-in fade-in duration-150">
               <div className="flex items-center justify-between">
                 <div>
                   <span className="text-xs font-bold text-[#141715] block">Adults</span>
@@ -134,15 +98,15 @@ export function FloatingBookingBar({
                   <button
                     type="button"
                     onClick={() => onUpdateGuests(Math.max(1, adultCount - 1), childCount)}
-                    className="w-8 h-8 rounded-lg border border-gray-300 flex items-center justify-center text-xs font-bold hover:bg-gray-100 cursor-pointer"
+                    className="w-8 h-8 rounded-lg border border-gray-300 flex items-center justify-center text-xs font-bold hover:bg-gray-100 cursor-pointer text-[#141715]"
                   >
                     -
                   </button>
-                  <span className="w-6 text-center text-xs font-bold">{adultCount}</span>
+                  <span className="w-6 text-center text-xs font-bold text-[#141715]">{adultCount}</span>
                   <button
                     type="button"
                     onClick={() => onUpdateGuests(adultCount + 1, childCount)}
-                    className="w-8 h-8 rounded-lg border border-gray-300 flex items-center justify-center text-xs font-bold hover:bg-gray-100 cursor-pointer"
+                    className="w-8 h-8 rounded-lg border border-gray-300 flex items-center justify-center text-xs font-bold hover:bg-gray-100 cursor-pointer text-[#141715]"
                   >
                     +
                   </button>
@@ -158,15 +122,15 @@ export function FloatingBookingBar({
                   <button
                     type="button"
                     onClick={() => onUpdateGuests(adultCount, Math.max(0, childCount - 1))}
-                    className="w-8 h-8 rounded-lg border border-gray-300 flex items-center justify-center text-xs font-bold hover:bg-gray-100 cursor-pointer"
+                    className="w-8 h-8 rounded-lg border border-gray-300 flex items-center justify-center text-xs font-bold hover:bg-gray-100 cursor-pointer text-[#141715]"
                   >
                     -
                   </button>
-                  <span className="w-6 text-center text-xs font-bold">{childCount}</span>
+                  <span className="w-6 text-center text-xs font-bold text-[#141715]">{childCount}</span>
                   <button
                     type="button"
                     onClick={() => onUpdateGuests(adultCount, childCount + 1)}
-                    className="w-8 h-8 rounded-lg border border-gray-300 flex items-center justify-center text-xs font-bold hover:bg-gray-100 cursor-pointer"
+                    className="w-8 h-8 rounded-lg border border-gray-300 flex items-center justify-center text-xs font-bold hover:bg-gray-100 cursor-pointer text-[#141715]"
                   >
                     +
                   </button>
@@ -184,72 +148,54 @@ export function FloatingBookingBar({
           )}
         </div>
 
-        {/* Action Button: Check Rates */}
+        {/* Terracotta Action CTA */}
         <button
           type="button"
           onClick={onCheckRates}
-          className="px-8 py-3.5 rounded-xl bg-[#141715] hover:bg-[#28302b] text-[#FAF8F3] text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-md hover:shadow-lg cursor-pointer shrink-0"
+          className="ml-2 px-5 py-2.5 rounded-lg bg-[#B93A2B] hover:bg-[#9f2f22] text-white text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all shadow-sm cursor-pointer active:scale-95 whitespace-nowrap"
         >
-          <span>Check Rates</span>
-          <ArrowRight className="w-4 h-4 text-[#E06354]" />
+          <span>Check Availability</span>
+          <ArrowRight className="w-3.5 h-3.5" />
         </button>
       </div>
 
       {/* =========================================================================
-          MOBILE LUXURY BAR (md:hidden)
-          Sleek, compact, tactile card designed specifically for small viewports
+          MOBILE MINIMALIST PILL (md:hidden)
          ========================================================================= */}
-      <div className="md:hidden bg-white/95 backdrop-blur-md rounded-2xl border border-[rgba(139,130,88,0.22)] shadow-xl p-3 flex flex-col gap-2.5">
-        {/* Row 1: Interactive Tappable Dates & Guests Pill */}
-        <div className="grid grid-cols-2 gap-2">
-          {/* Dates Chip */}
+      <div className="md:hidden w-full bg-[#FAF8F3]/95 backdrop-blur-md rounded-xl shadow-2xl border border-white/40 p-1.5 pl-3 flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2 min-w-0">
           <button
             type="button"
             onClick={onOpenCalendar}
-            className="p-2.5 rounded-xl bg-[#FAF8F3] border border-[rgba(139,130,88,0.18)] text-left flex items-center gap-2.5 cursor-pointer active:scale-98 transition-transform"
+            className="flex items-center gap-2 text-xs font-medium text-[#141715] truncate cursor-pointer py-1.5"
           >
-            <Calendar className="w-4 h-4 text-[#E06354] shrink-0" />
-            <div className="min-w-0 flex-1">
-              <span className="text-[9px] font-mono uppercase tracking-wider text-[#788E73] font-bold block truncate">
-                Dates
-              </span>
-              <span className={`text-xs font-bold block truncate ${startDate ? "text-[#141715]" : "text-[#788E73]"}`}>
-                {startDate ? `${formatDateShort(startDate)} to ${formatDateShort(endDate)}` : "Select Dates"}
-              </span>
-            </div>
+            <Calendar className="w-4 h-4 text-[#56635A] shrink-0" />
+            <span className="truncate">{datesDisplay}</span>
           </button>
 
-          {/* Guests Chip */}
+          <span className="text-gray-400 text-xs select-none shrink-0">·</span>
+
           <button
             type="button"
             onClick={() => setGuestsOpen(true)}
-            className="p-2.5 rounded-xl bg-[#FAF8F3] border border-[rgba(139,130,88,0.18)] text-left flex items-center gap-2.5 cursor-pointer active:scale-98 transition-transform"
+            className="text-xs font-medium text-[#141715] whitespace-nowrap cursor-pointer py-1.5"
           >
-            <Users className="w-4 h-4 text-[#7BA23F] shrink-0" />
-            <div className="min-w-0 flex-1">
-              <span className="text-[9px] font-mono uppercase tracking-wider text-[#788E73] font-bold block truncate">
-                Guests
-              </span>
-              <span className="text-xs font-bold text-[#141715] block truncate">
-                {adultCount} Adults{childCount > 0 ? `, ${childCount} Child` : ""}
-              </span>
-            </div>
+            {guestsLabel}
           </button>
         </div>
 
-        {/* Row 2: Full Width Tactile Action Button */}
         <button
           type="button"
           onClick={onCheckRates}
-          className="w-full py-3 rounded-xl bg-[#141715] text-[#FAF8F3] text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 shadow-sm active:scale-98 transition-transform cursor-pointer"
+          className="px-6 min-w-[132px] py-2.5 rounded-lg bg-[#B93A2B] hover:bg-[#9f2f22] text-white text-[11px] font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 shadow-sm active:scale-95 transition-transform cursor-pointer shrink-0"
         >
-          <span>Check Rates & Available Rooms</span>
-          <ArrowRight className="w-4 h-4 text-[#E06354]" />
+          <span>Reserve</span>
+          <ArrowRight className="w-3.5 h-3.5" />
         </button>
 
         {/* Mobile Guests Modal Sheet */}
         {guestsOpen && (
-          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-3">
+          <div className="fixed inset-0 z-50 flex items-end justify-center p-3">
             <div
               className="fixed inset-0 bg-black/50 backdrop-blur-xs"
               onClick={() => setGuestsOpen(false)}
@@ -277,15 +223,15 @@ export function FloatingBookingBar({
                   <button
                     type="button"
                     onClick={() => onUpdateGuests(Math.max(1, adultCount - 1), childCount)}
-                    className="w-9 h-9 rounded-xl border border-gray-300 flex items-center justify-center text-sm font-bold active:bg-gray-100"
+                    className="w-9 h-9 rounded-xl border border-gray-300 flex items-center justify-center text-sm font-bold active:bg-gray-100 text-[#141715]"
                   >
                     -
                   </button>
-                  <span className="w-6 text-center text-sm font-bold font-mono">{adultCount}</span>
+                  <span className="w-6 text-center text-sm font-bold font-mono text-[#141715]">{adultCount}</span>
                   <button
                     type="button"
                     onClick={() => onUpdateGuests(adultCount + 1, childCount)}
-                    className="w-9 h-9 rounded-xl border border-gray-300 flex items-center justify-center text-sm font-bold active:bg-gray-100"
+                    className="w-9 h-9 rounded-xl border border-gray-300 flex items-center justify-center text-sm font-bold active:bg-gray-100 text-[#141715]"
                   >
                     +
                   </button>
@@ -301,15 +247,15 @@ export function FloatingBookingBar({
                   <button
                     type="button"
                     onClick={() => onUpdateGuests(adultCount, Math.max(0, childCount - 1))}
-                    className="w-9 h-9 rounded-xl border border-gray-300 flex items-center justify-center text-sm font-bold active:bg-gray-100"
+                    className="w-9 h-9 rounded-xl border border-gray-300 flex items-center justify-center text-sm font-bold active:bg-gray-100 text-[#141715]"
                   >
                     -
                   </button>
-                  <span className="w-6 text-center text-sm font-bold font-mono">{childCount}</span>
+                  <span className="w-6 text-center text-sm font-bold font-mono text-[#141715]">{childCount}</span>
                   <button
                     type="button"
                     onClick={() => onUpdateGuests(adultCount, childCount + 1)}
-                    className="w-9 h-9 rounded-xl border border-gray-300 flex items-center justify-center text-sm font-bold active:bg-gray-100"
+                    className="w-9 h-9 rounded-xl border border-gray-300 flex items-center justify-center text-sm font-bold active:bg-gray-100 text-[#141715]"
                   >
                     +
                   </button>

@@ -1,237 +1,189 @@
 "use client";
 
 import React, { useState } from "react";
-import {
-  Waves,
-  Trees,
-  Utensils,
-  Sparkles,
-  ArrowRight,
-  Clock,
-  CheckCircle,
-  Eye,
-} from "lucide-react";
+import { ChevronDown } from "lucide-react";
 
 interface MomentItem {
   id: string;
-  category: string;
   title: string;
-  subtitle: string;
-  description: string;
-  tag: string;
-  tagColor: string;
-  imagePlaceholderNote: string;
-  imageUrl: string;
-  highlights: string[];
   timing: string;
+  summary: string;
+  details: string;
+  highlights: string[];
+  imageUrl: string;
+  imagePlaceholderNote: string;
 }
 
 const MOMENTS_DATA: MomentItem[] = [
   {
     id: "pool",
-    category: "water",
     title: "Natural Spring Swimming Pool",
-    subtitle: "Spring-Fed Mountain Aquifer",
-    description:
-      "A 65ft x 30ft natural spring water pool framed by chikoo trees and coconut palms. Limestone decks and teakwood loungers offer cool, chemical-free relaxation with pure water filtered through surrounding rock strata.",
-    tag: "Spring-Fed Water",
-    tagColor: "bg-[#38BDF8]/15 text-[#0284C7] border-[#38BDF8]/30",
-    imagePlaceholderNote: "IMAGE PLACEHOLDER: Natural Spring Pool & Limestone Deck",
+    timing: "7:00 AM - 8:00 PM",
+    summary: "65ft x 30ft, spring-fed and chemical-free.",
+    details:
+      "Framed by chikoo trees and coconut palms, with limestone decks and teakwood loungers fed by pure rock-filtered mountain spring water.",
+    highlights: ["Mountain Spring Source", "Shaded Chikoo Canopy"],
     imageUrl:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuCi7vPw3FOLyDW6B-ZolyBkozWBkQORJidKhQUInUCmLJbZBMNYYTlcb-fvd56JmIMz36GDKdTJeXXFMDkERLMFGw7WtXfDkkiG6eFYDUNi7wOURNLCbk2JD6Hzu6tK52p71CZOE9f0rolm6lkdkkqvaSZtbclpQB5w4SXxSNPjHfsyBBYKSu3_9bGEofouHsFB52_d8x_CV69zmZieu2YKPPovgoY_z94If2FofMM",
-    highlights: ["65ft x 30ft Pool Basin", "Mountain Spring Source", "Shaded Chikoo Canopy"],
-    timing: "Open 07:00 AM to 08:00 PM",
+      "https://res.cloudinary.com/db7h39kx9/image/upload/v1795807445/Where_nature_paints_its_own_masterpiece._pkydvb.webp",
+    imagePlaceholderNote: "IMAGE PLACEHOLDER: Natural Spring Pool & Limestone Deck",
   },
   {
     id: "groves",
-    category: "orchard",
     title: "12-Acre Pomelo & Citrus Groves",
-    subtitle: "Botanical Agro-Horticulture",
-    description:
-      "Stroll along earthen irrigation canals shaded by mature citrus trees. Experience guided harvest walks, inhale fragrant white pomelo blossoms in spring, and sample sun-warmed fruit harvested directly from the branch.",
-    tag: "Citrus Harvest",
-    tagColor: "bg-[#7BA23F]/15 text-[#5A7E24] border-[#7BA23F]/30",
-    imagePlaceholderNote: "IMAGE PLACEHOLDER: Pomelo Trees & Orchard Walking Trails",
+    timing: "Morning & Sunset Walks",
+    summary: "Harvest walks past 300+ citrus trees.",
+    details:
+      "Stroll along earthen irrigation canals shaded by mature citrus trees, inhale white pomelo blossoms, and sample sun-warmed fruit straight from the branch.",
+    highlights: ["Over 300 Citrus Trees", "Seasonal Tasting Walks"],
     imageUrl:
-      "https://images.unsplash.com/photo-1540541338287-41700207dee6?auto=format&fit=crop&w=1200&q=80",
-    highlights: ["Over 300 Citrus Trees", "Earthen Irrigation Canals", "Seasonal Tasting Walks"],
-    timing: "Daily Morning & Sunset Walks",
+      "https://res.cloudinary.com/db7h39kx9/image/upload/v1795764401/unnamed_khku8c.webp",
+    imagePlaceholderNote: "IMAGE PLACEHOLDER: Pomelo Trees & Orchard Walking Trails",
   },
   {
     id: "kitchen",
-    category: "dining",
-    title: "Home-Style Agri Chulha Kitchen",
-    subtitle: "Wood-Fired Coastal Recipes",
-    description:
-      "Traditional clay hearth cooking using local mango and coconut timber. Enjoy piping-hot hand-pressed rice bhakri, slow-cooked gavran country chicken, fresh Surmai rawa fry, and cooling coastal solkadhi prepared with fresh coconut milk.",
-    tag: "Clay Hearth",
-    tagColor: "bg-[#E06354]/15 text-[#C0392B] border-[#E06354]/30",
-    imagePlaceholderNote: "IMAGE PLACEHOLDER: Wood-Fired Clay Chulha & Hand-Pressed Bhakri",
+    title: "Agri Chulha Kitchen",
+    timing: "Breakfast, Lunch & Dinner",
+    summary: "Bhakri and gavran chicken on a clay hearth.",
+    details:
+      "Traditional wood-fired cooking using local mango and coconut timber, serving piping-hot hand-pressed rice bhakri, fresh Surmai rawa fry, and cooling solkadhi.",
+    highlights: ["100% Wood-Fired", "Fresh Coastal Surmai"],
     imageUrl:
-      "https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=1200&q=80",
-    highlights: ["100% Wood-Fired Cooking", "Hand-Pressed Rice Bhakri", "Fresh Coastal Surmai"],
-    timing: "Breakfast, Lunch & Chulha Dinner",
+      "https://res.cloudinary.com/db7h39kx9/image/upload/v1795808546/unnamed_9_cdft18.jpg",
+    imagePlaceholderNote: "IMAGE PLACEHOLDER: Wood-Fired Clay Chulha & Hand-Pressed Bhakri",
   },
   {
     id: "bonfire",
-    category: "night",
-    title: "Starlit Campfire & Exclusive Buyouts",
-    subtitle: "Sahyadri Evenings & Family Celebrations",
-    description:
-      "As dusk blankets the orchard, gather around crackling cedar wood logs under unpolluted night skies. Reserve the entire 12-acre resort with all 5 cottages for private family reunions, milestones, or peaceful group retreats.",
-    tag: "Acoustic Evenings",
-    tagColor: "bg-[#8B8258]/15 text-[#6B6338] border-[#8B8258]/30",
-    imagePlaceholderNote: "IMAGE PLACEHOLDER: Campfire Nights Under Stars & Verandah",
+    title: "Starlit Campfire",
+    timing: "Dusk - 10:30 PM",
+    summary: "Cedar-wood fire under dark Sahyadri skies.",
+    details:
+      "As dusk blankets the orchard, gather around crackling cedar logs or reserve the entire 12-acre resort with all 5 cottages for private family milestones.",
+    highlights: ["Acoustic Cedar Wood Fire", "Sahyadri Star Gazing"],
     imageUrl:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuC0BFb_TtjuugqlLCRyoCMFwMzIrnaIBqpH5gUUr-tFVieMrkb7rYHAEjs8hSeigzrabwNEWtAg9pQ4fRDk_lqseeU6KYUMazmawvtYhsuahjQSbIK8pUl3m4Wwep2WuVR9x1UIZOK45haQLy2OvQULp1VqrjBzAAQ3Ex1YI0f7XeRV4VRc_tJhFGuHUrSC3XEz2R8BbXz_bVxHJzAWU7KEE0IvR8tu6fj0iESVnws",
-    highlights: ["Acoustic Cedar Wood Fire", "Up to 25 Guests Buyout", "Sahyadri Star Gazing"],
-    timing: "Dusk to 10:30 PM",
+      "https://res.cloudinary.com/db7h39kx9/image/upload/v1795808512/Untitled_design_1_rto5ox.webp",
+    imagePlaceholderNote: "IMAGE PLACEHOLDER: Campfire Nights Under Stars & Verandah",
   },
 ];
 
 export function CuratedMomentsSection() {
-  const [activeCategory, setActiveCategory] = useState<string>("all");
-  const [selectedMoment, setSelectedMoment] = useState<MomentItem | null>(null);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
-  const filteredMoments =
-    activeCategory === "all"
-      ? MOMENTS_DATA
-      : MOMENTS_DATA.filter((m) => m.category === activeCategory);
+  const toggleCard = (id: string) => {
+    setExpandedId((prev) => (prev === id ? null : id));
+  };
 
   return (
-    <section id="orchard" className="py-14 sm:py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto scroll-mt-20">
-      {/* Editorial Header */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 sm:mb-14 pb-6 border-b border-[rgba(139,130,88,0.2)]">
-        <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#7BA23F]/10 border border-[#7BA23F]/25 text-[#5A7E24] text-[11px] font-mono uppercase tracking-widest font-semibold mb-3">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#7BA23F]"></span>
-            <span>Slow Cadence • Saphale Foothills</span>
-          </div>
-          <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl text-[#141715] tracking-tight">
-            Curated Moments in Saphale
+    <section
+      id="orchard"
+      className="py-14 sm:py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto scroll-mt-20"
+    >
+      {/* Clean Editorial Header */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6 sm:mb-8">
+        <div className="space-y-2">
+          <span className="text-[11px] font-mono uppercase tracking-widest text-[#788E73] font-semibold block">
+            Saphale Foothills
+          </span>
+          <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl text-[#141715] font-normal tracking-tight leading-[1.1]">
+            What You&apos;ll Do Here
           </h2>
         </div>
-        <p className="text-xs sm:text-sm text-[#56635A] max-w-md font-sans leading-relaxed">
-          Misty morning birdcalls, afternoon swim in natural spring waters, and unhurried coastal meals
-          under shaded pomelo branches.
+
+        <p className="text-xs sm:text-sm text-[#56635A] max-w-md leading-relaxed">
+          Spring-water swims, harvest walks, and coastal meals under pomelo branches.
         </p>
       </div>
 
-      {/* Category Filter Pills (Mobile Scrollable) */}
-      <div className="flex items-center gap-2 sm:gap-3 overflow-x-auto pb-4 mb-8 sm:mb-10 no-scrollbar">
-        {[
-          { key: "all", label: "All Experiences" },
-          { key: "water", label: "Spring Water Pool" },
-          { key: "orchard", label: "12-Acre Groves" },
-          { key: "dining", label: "Agri Kitchen" },
-          { key: "night", label: "Campfires & Buyouts" },
-        ].map((cat) => (
-          <button
-            key={cat.key}
-            onClick={() => setActiveCategory(cat.key)}
-            className={`px-4 py-2 rounded-full text-xs font-semibold tracking-wider uppercase transition-all duration-200 shrink-0 cursor-pointer ${
-              activeCategory === cat.key
-                ? "bg-[#141715] text-[#FAF8F3] shadow-sm"
-                : "bg-white/80 text-[#56635A] border border-[rgba(139,130,88,0.25)] hover:border-[#141715] hover:text-[#141715]"
-            }`}
-          >
-            {cat.label}
-          </button>
-        ))}
+      {/* Subtle Meta Prompt */}
+      <div className="mb-5 text-[10px] font-mono uppercase tracking-widest text-[#8B8258] font-medium">
+        4 Experiences · Tap any card for details
       </div>
 
-      {/* Fresh Balanced Editorial Grid (Every Card Has Rich Imagery + Typography) */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
-        {filteredMoments.map((item, index) => (
-          <div
-            key={item.id}
-            className="group bg-white/85 rounded-2xl sm:rounded-3xl border border-[rgba(139,130,88,0.22)] overflow-hidden shadow-xs hover:shadow-md transition-all duration-300 flex flex-col justify-between"
-          >
-            {/* Image Container with Inset Badges and Aspect Ratio */}
-            <div className="relative w-full aspect-[16/10] sm:aspect-[16/9] overflow-hidden bg-[#F2EDE2]">
-              <img
-                src={item.imageUrl}
-                alt={item.title}
-                data-placeholder={item.imagePlaceholderNote}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-              />
-
-              {/* Inset Category Tag */}
-              <div className="absolute top-3.5 left-3.5 sm:top-4 sm:left-4 z-10">
-                <span
-                  className={`px-3 py-1 rounded-full text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider backdrop-blur-md border ${item.tagColor}`}
-                >
-                  {item.tag}
-                </span>
+      {/* 4 Experience Cards (Uniform Clean Layout on Mobile & Desktop) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6">
+        {MOMENTS_DATA.map((item) => {
+          const isExpanded = expandedId === item.id;
+          return (
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => toggleCard(item.id)}
+              aria-expanded={isExpanded}
+              className="group text-left bg-white rounded-2xl border border-[rgba(139,130,88,0.2)] overflow-hidden shadow-2xs hover:shadow-md transition-all duration-200 flex flex-col cursor-pointer"
+            >
+              {/* Clean Uncluttered Photo Frame */}
+              <div className="w-full aspect-[16/10] overflow-hidden bg-[#F2EDE2]">
+                <img
+                  src={item.imageUrl}
+                  alt={item.title}
+                  data-placeholder={item.imagePlaceholderNote}
+                  className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-500"
+                />
               </div>
 
-              {/* Inset Timing Badge */}
-              <div className="absolute top-3.5 right-3.5 sm:top-4 sm:right-4 z-10">
-                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#141715]/80 backdrop-blur-md text-[#FAF8F3] text-[10px] font-mono">
-                  <Clock className="w-3 h-3 text-[#7BA23F]" />
-                  <span>{item.timing}</span>
+              {/* Compact Content Body */}
+              <div className="p-4 sm:p-6 w-full space-y-2.5 flex-1 flex flex-col justify-between">
+                <div className="space-y-1.5">
+                  <div className="flex items-start justify-between gap-3">
+                    <h3 className="font-serif text-xl sm:text-2xl text-[#141715] font-medium leading-snug">
+                      {item.title}
+                    </h3>
+                    <ChevronDown
+                      className={`w-4 h-4 text-[#8B8258] shrink-0 mt-1.5 transition-transform duration-200 ${
+                        isExpanded ? "rotate-180 text-[#141715]" : ""
+                      }`}
+                    />
+                  </div>
+
+                  <span className="text-[10px] font-mono uppercase tracking-widest text-[#788E73] font-semibold block">
+                    {item.timing}
+                  </span>
+
+                  <p className="text-xs sm:text-sm text-[#56635A] leading-relaxed pt-0.5">
+                    {item.summary}
+                  </p>
+
+                  {isExpanded && (
+                    <p className="text-xs sm:text-sm text-[#141715]/85 leading-relaxed pt-2 border-t border-[rgba(139,130,88,0.14)] mt-2">
+                      {item.details}
+                    </p>
+                  )}
+                </div>
+
+                {/* Two Restrained Hairline Pills */}
+                <div className="flex flex-wrap items-center gap-2 pt-2">
+                  {item.highlights.map((h, i) => (
+                    <span
+                      key={i}
+                      className="px-3 py-1 rounded-full border border-[rgba(139,130,88,0.28)] bg-[#FAF8F3] text-[11px] font-sans text-[#56635A]"
+                    >
+                      {h}
+                    </span>
+                  ))}
                 </div>
               </div>
-
-              {/* Gradient Scrim for Contrast */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-60"></div>
-            </div>
-
-            {/* Content Body */}
-            <div className="p-5 sm:p-7 flex-1 flex flex-col justify-between space-y-4">
-              <div className="space-y-2">
-                <span className="text-[11px] font-mono uppercase tracking-widest text-[#788E73] font-semibold block">
-                  {item.subtitle}
-                </span>
-                <h3 className="font-serif text-2xl sm:text-3xl text-[#141715] leading-tight">
-                  {item.title}
-                </h3>
-                <p className="text-xs sm:text-sm text-[#56635A] leading-relaxed pt-1">
-                  {item.description}
-                </p>
-              </div>
-
-              {/* Highlights Chips */}
-              <div className="pt-4 border-t border-[rgba(139,130,88,0.18)] flex flex-wrap items-center gap-2">
-                {item.highlights.map((h, i) => (
-                  <span
-                    key={i}
-                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#FAF8F3] border border-[rgba(139,130,88,0.2)] text-[11px] font-mono text-[#56635A]"
-                  >
-                    <CheckCircle className="w-3 h-3 text-[#7BA23F]" />
-                    <span>{h}</span>
-                  </span>
-                ))}
-              </div>
-            </div>
-          </div>
-        ))}
+            </button>
+          );
+        })}
       </div>
 
-      {/* Bottom Editorial Callout */}
-      <div className="mt-10 sm:mt-14 p-6 sm:p-8 rounded-2xl bg-[#F2EDE2]/70 border border-[rgba(139,130,88,0.25)] flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-white border border-[rgba(139,130,88,0.25)] flex items-center justify-center text-[#7BA23F] shrink-0">
-            <Sparkles className="w-5 h-5" />
-          </div>
-          <div>
-            <h4 className="font-serif text-base sm:text-lg text-[#141715]">
-              Looking to celebrate a special occasion?
-            </h4>
-            <p className="text-xs text-[#56635A]">
-              We arrange bespoke candlelight orchard dinners, guided harvests, and custom barbecue setups.
-            </p>
-          </div>
+      {/* Grounded Dark Forest Bottom Callout */}
+      <div className="mt-6 sm:mt-8 p-6 sm:p-8 rounded-2xl bg-[#101814] text-[#FAF8F3] flex flex-col sm:flex-row sm:items-center justify-between gap-5 shadow-md">
+        <div className="space-y-1.5 max-w-xl">
+          <h3 className="font-serif text-2xl sm:text-3xl text-white font-normal leading-tight">
+            Celebrating something?
+          </h3>
+          <p className="text-xs sm:text-sm text-white/75 leading-relaxed">
+            Buyouts for up to 25 guests, candlelight orchard dinners and custom barbecue setups.
+          </p>
         </div>
 
         <a
           href="https://wa.me/919850607607?text=Hello%2C%20I%20would%20like%20to%20inquire%20about%20a%20special%20occasion%20or%20buyout%20at%20Pomelo%20Garden."
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#141715] hover:bg-[#252c27] text-[#FAF8F3] text-xs uppercase tracking-wider font-semibold transition-colors shrink-0"
+          className="w-full sm:w-auto px-6 py-3 rounded-xl bg-[#1E6F50] hover:bg-[#185e43] text-white text-xs sm:text-sm font-semibold text-center transition-colors shrink-0"
         >
-          <span>Inquire on WhatsApp</span>
-          <ArrowRight className="w-3.5 h-3.5 text-[#7BA23F]" />
+          Inquire on WhatsApp
         </a>
       </div>
     </section>

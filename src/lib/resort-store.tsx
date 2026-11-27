@@ -346,164 +346,185 @@ const DEFAULT_ROOMS: RoomItem[] = [
   },
 ];
 
-const DEFAULT_BOOKINGS: BookingItem[] = [
-  {
-    id: "#PG-2601",
-    guestName: "Farhan Merchant",
-    phone: "+91 98190 32415",
-    city: "South Mumbai",
-    adults: 4,
-    children: 0,
-    mealPreference: "Mixed",
-    vegCount: 2,
-    nonVegCount: 2,
-    packageId: "group-overnight",
-    packageName: "Overnight Group Stay",
-    rooms: ["AC-103"],
-    checkIn: "2026-11-25",
-    checkOut: "2026-11-27",
-    status: "Checked-In",
-    totalAmount: 16200,
-    advancePaid: 16200,
-    balanceDue: 0,
-    paymentMode: "Bank Transfer",
-    idType: "Passport",
-    idLast4: "9921",
-    idVerified: true,
-    createdAt: "2026-11-20T10:30:00Z",
-    notes: "Requires late dinner arrival. 2 Veg, 2 Non-Veg thalis requested.",
-  },
-  {
-    id: "#PG-2602",
-    guestName: "Mehta Family Reunion",
-    phone: "+91 98220 89120",
-    city: "Ghodbunder, Thane",
-    adults: 10,
-    children: 2,
-    mealPreference: "Veg",
-    vegCount: 12,
-    nonVegCount: 0,
-    packageId: "picnic",
-    packageName: "One-Day Picnic (9 AM to 5 PM)",
-    rooms: ["NONAC-201"],
-    checkIn: "2026-12-08",
-    checkOut: "2026-12-08",
-    status: "Pending Advance",
-    totalAmount: 14400,
-    advancePaid: 0,
-    balanceDue: 14400,
-    paymentMode: "Pending",
-    idType: "Aadhaar",
-    idLast4: "3109",
-    idVerified: false,
-    createdAt: "2026-11-23T14:15:00Z",
-    notes: "Strict Jain food requirement (no onion, garlic, or root vegetables).",
-  },
-  {
-    id: "#PG-2603",
-    guestName: "Ananya & Rohan M.",
-    phone: "+91 97692 11094",
-    city: "Kothrud, Pune",
-    adults: 2,
-    children: 0,
-    mealPreference: "Veg",
-    vegCount: 2,
-    nonVegCount: 0,
-    packageId: "couple-retreat",
-    packageName: "Overnight Couple Retreat (23 Hrs)",
-    rooms: ["AC-104"],
-    checkIn: "2026-12-02",
-    checkOut: "2026-12-04",
-    status: "Confirmed",
-    totalAmount: 7800,
-    advancePaid: 7800,
-    balanceDue: 0,
-    paymentMode: "UPI",
-    idType: "Driving License",
-    idLast4: "8103",
-    idVerified: true,
-    createdAt: "2026-11-21T09:00:00Z",
-    notes: "Anniversary celebration. Complimentary floral pool requested.",
-  },
-  {
-    id: "#PG-2604",
-    guestName: "Dr. Vikram Deshmukh",
-    phone: "+91 98201 44582",
-    city: "Bandra West, Mumbai",
-    adults: 4,
-    children: 2,
-    mealPreference: "Non-Veg",
-    vegCount: 2,
-    nonVegCount: 4,
-    packageId: "group-overnight",
-    packageName: "Overnight Group Stay",
-    rooms: ["AC-101"],
-    checkIn: "2026-12-12",
-    checkOut: "2026-12-14",
-    status: "Confirmed",
-    totalAmount: 12600,
-    advancePaid: 6000,
-    balanceDue: 6600,
-    paymentMode: "UPI",
-    idType: "Aadhaar",
-    idLast4: "4892",
-    idVerified: true,
-    createdAt: "2026-11-22T16:45:00Z",
-    notes: "Elderly guests traveling. Require ground floor room 101.",
-  },
-  {
-    id: "#PG-2605",
-    guestName: "Kapadia Group",
-    phone: "+91 98211 77341",
-    city: "Borivali, Mumbai",
-    adults: 8,
-    children: 0,
-    mealPreference: "Mixed",
-    vegCount: 4,
-    nonVegCount: 4,
-    packageId: "group-overnight",
-    packageName: "Overnight Group Stay",
-    rooms: ["AC-101", "AC-103"],
-    checkIn: "2026-11-28",
-    checkOut: "2026-11-29",
-    status: "Pending Advance",
-    totalAmount: 16000,
-    advancePaid: 5000,
-    balanceDue: 11000,
-    paymentMode: "Cash",
-    idType: "PAN",
-    idLast4: "1044",
-    idVerified: true,
-    createdAt: "2026-11-24T11:20:00Z",
-    notes: "College alumni reunion. Inquiring about bonfire & guitar permission.",
-  },
-  {
-    id: "#PG-2606",
-    guestName: "Jog Family",
-    phone: "+91 98600 55123",
-    city: "Dadar, Mumbai",
-    adults: 4,
-    children: 0,
-    mealPreference: "Veg",
-    vegCount: 4,
-    nonVegCount: 0,
-    packageId: "picnic",
-    packageName: "One-Day Picnic (9 AM to 5 PM)",
-    rooms: ["NONAC-201"],
-    checkIn: "2026-11-24",
-    checkOut: "2026-11-24",
-    status: "Completed",
-    totalAmount: 3600,
-    advancePaid: 3600,
-    balanceDue: 0,
-    paymentMode: "UPI",
-    idType: "Aadhaar",
-    idLast4: "6712",
-    idVerified: true,
-    createdAt: "2026-11-19T08:10:00Z",
-    notes: "Regular guests. Loved the fresh bhakri and pitla.",
-  },
-];
+export function getTodayISO(): string {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, "0");
+  const d = String(now.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
+export function addDaysToISO(iso: string, days: number): string {
+  const [y, m, d] = iso.split("-").map(Number);
+  const date = new Date(Date.UTC(y, m - 1, d + days));
+  const ny = date.getUTCFullYear();
+  const nm = String(date.getUTCMonth() + 1).padStart(2, "0");
+  const nd = String(date.getUTCDate()).padStart(2, "0");
+  return `${ny}-${nm}-${nd}`;
+}
+
+export function generateInitialBookings(baseToday: string = getTodayISO()): BookingItem[] {
+  return [
+    {
+      id: "#PG-2601",
+      guestName: "Farhan Merchant",
+      phone: "+91 98190 32415",
+      city: "South Mumbai",
+      adults: 4,
+      children: 0,
+      mealPreference: "Mixed",
+      vegCount: 2,
+      nonVegCount: 2,
+      packageId: "group-overnight",
+      packageName: "Overnight Group Stay",
+      rooms: ["AC-103"],
+      checkIn: addDaysToISO(baseToday, -1),
+      checkOut: addDaysToISO(baseToday, 1),
+      status: "Checked-In",
+      totalAmount: 16200,
+      advancePaid: 16200,
+      balanceDue: 0,
+      paymentMode: "Bank Transfer",
+      idType: "Passport",
+      idLast4: "9921",
+      idVerified: true,
+      createdAt: new Date().toISOString(),
+      notes: "Checked-in yesterday. Requested late dinner in orchard. 2 Veg, 2 Non-Veg thalis.",
+    },
+    {
+      id: "#PG-2602",
+      guestName: "Kapadia Group",
+      phone: "+91 98211 77341",
+      city: "Borivali, Mumbai",
+      adults: 8,
+      children: 0,
+      mealPreference: "Mixed",
+      vegCount: 4,
+      nonVegCount: 4,
+      packageId: "group-overnight",
+      packageName: "Overnight Group Stay",
+      rooms: ["AC-101", "AC-104"],
+      checkIn: addDaysToISO(baseToday, 1),
+      checkOut: addDaysToISO(baseToday, 3),
+      status: "Confirmed",
+      totalAmount: 16000,
+      advancePaid: 16000,
+      balanceDue: 0,
+      paymentMode: "UPI",
+      idType: "PAN",
+      idLast4: "1044",
+      idVerified: true,
+      createdAt: new Date().toISOString(),
+      notes: "College alumni reunion. Inquiring about bonfire and acoustic music permission.",
+    },
+    {
+      id: "#PG-2603",
+      guestName: "Ananya & Rohan M.",
+      phone: "+91 97692 11094",
+      city: "Kothrud, Pune",
+      adults: 2,
+      children: 0,
+      mealPreference: "Veg",
+      vegCount: 2,
+      nonVegCount: 0,
+      packageId: "couple-retreat",
+      packageName: "Overnight Couple Retreat (23 Hrs)",
+      rooms: ["AC-102"],
+      checkIn: addDaysToISO(baseToday, 3),
+      checkOut: addDaysToISO(baseToday, 5),
+      status: "Confirmed",
+      totalAmount: 7800,
+      advancePaid: 7800,
+      balanceDue: 0,
+      paymentMode: "UPI",
+      idType: "Driving License",
+      idLast4: "8103",
+      idVerified: true,
+      createdAt: new Date().toISOString(),
+      notes: "Anniversary celebration. Complimentary floral pool requested.",
+    },
+    {
+      id: "#PG-2604",
+      guestName: "Mehta Family Reunion",
+      phone: "+91 98220 89120",
+      city: "Ghodbunder, Thane",
+      adults: 10,
+      children: 2,
+      mealPreference: "Veg",
+      vegCount: 12,
+      nonVegCount: 0,
+      packageId: "picnic",
+      packageName: "One-Day Picnic (9 AM to 5 PM)",
+      rooms: ["NONAC-201"],
+      checkIn: addDaysToISO(baseToday, 5),
+      checkOut: addDaysToISO(baseToday, 5),
+      status: "Pending Advance",
+      totalAmount: 14400,
+      advancePaid: 5000,
+      balanceDue: 9400,
+      paymentMode: "Pending",
+      idType: "Aadhaar",
+      idLast4: "3109",
+      idVerified: false,
+      createdAt: new Date().toISOString(),
+      notes: "Strict Jain food requirement (no onion, garlic, or root vegetables).",
+    },
+    {
+      id: "#PG-2605",
+      guestName: "Dr. Vikram Deshmukh",
+      phone: "+91 98201 44582",
+      city: "Bandra West, Mumbai",
+      adults: 4,
+      children: 2,
+      mealPreference: "Non-Veg",
+      vegCount: 2,
+      nonVegCount: 4,
+      packageId: "group-overnight",
+      packageName: "Overnight Group Stay",
+      rooms: ["AC-101"],
+      checkIn: addDaysToISO(baseToday, 8),
+      checkOut: addDaysToISO(baseToday, 10),
+      status: "Confirmed",
+      totalAmount: 12600,
+      advancePaid: 6000,
+      balanceDue: 6600,
+      paymentMode: "UPI",
+      idType: "Aadhaar",
+      idLast4: "4892",
+      idVerified: true,
+      createdAt: new Date().toISOString(),
+      notes: "Elderly guests traveling. Require ground floor cottage.",
+    },
+    {
+      id: "#PG-2606",
+      guestName: "Jog Family",
+      phone: "+91 98600 55123",
+      city: "Dadar, Mumbai",
+      adults: 4,
+      children: 0,
+      mealPreference: "Veg",
+      vegCount: 4,
+      nonVegCount: 0,
+      packageId: "picnic",
+      packageName: "One-Day Picnic (9 AM to 5 PM)",
+      rooms: ["NONAC-201"],
+      checkIn: addDaysToISO(baseToday, -3),
+      checkOut: addDaysToISO(baseToday, -3),
+      status: "Completed",
+      totalAmount: 3600,
+      advancePaid: 3600,
+      balanceDue: 0,
+      paymentMode: "UPI",
+      idType: "Aadhaar",
+      idLast4: "6712",
+      idVerified: true,
+      createdAt: new Date().toISOString(),
+      notes: "Regular guests. Loved the fresh bhakri and pitla.",
+    },
+  ];
+}
+
+const DEFAULT_BOOKINGS: BookingItem[] = generateInitialBookings();
 
 const DEFAULT_MEDIA: MediaItem[] = [
   {
@@ -580,8 +601,34 @@ const DEFAULT_MEDIA: MediaItem[] = [
   },
 ];
 
-const STORAGE_KEY = "pomelo_resort_store_v1";
+const STORAGE_KEY = "pomelo_resort_store_v3";
 const BROADCAST_CHANNEL_NAME = "pomelo-realtime";
+
+export function checkRoomOccupied(
+  roomId: string,
+  start: string,
+  end: string,
+  bookings: BookingItem[],
+  excludeBookingId?: string
+): { isOccupied: boolean; conflictBooking?: BookingItem } {
+  if (!start || !end) return { isOccupied: false };
+  const active = bookings.filter(
+    (b) => b.id !== excludeBookingId && b.status !== "Cancelled"
+  );
+  const conflict = active.find((b) => {
+    if (!b.rooms.includes(roomId)) return false;
+    const bStart = b.checkIn;
+    const bEnd = b.checkIn === b.checkOut ? b.checkIn : b.checkOut;
+    const reqStart = start;
+    const reqEnd = start === end ? start : end;
+
+    if (reqStart === reqEnd || bStart === bEnd) {
+      return reqStart <= bEnd && reqEnd >= bStart;
+    }
+    return reqStart < bEnd && reqEnd > bStart;
+  });
+  return { isOccupied: Boolean(conflict), conflictBooking: conflict };
+}
 
 const ResortStoreContext = createContext<ResortStoreContextType | null>(null);
 
@@ -787,19 +834,27 @@ export function calculateAvailabilityForDateRange(
 }
 
 export function ResortStoreProvider({ children }: { children: React.ReactNode }) {
-  const [data, setData] = useState<ResortStoreData>({
+  const [data, setData] = useState<ResortStoreData>(() => ({
     packages: DEFAULT_PACKAGES,
     rooms: DEFAULT_ROOMS,
     roomCategories: ROOM_CATEGORIES,
-    bookings: DEFAULT_BOOKINGS,
+    bookings: generateInitialBookings(),
     media: DEFAULT_MEDIA,
-    lastUpdated: "2026-11-26T00:00:00.000Z",
-  });
+    lastUpdated: new Date().toISOString(),
+  }));
   const [isLoaded, setIsLoaded] = useState(false);
 
   // Initialize from LocalStorage and connect BroadcastChannel
   useEffect(() => {
     try {
+      // Clean up legacy stale storage keys from previous builds
+      try {
+        localStorage.removeItem("pomelo_resort_store_v1");
+        localStorage.removeItem("pomelo_resort_store_v2");
+      } catch {
+        // ignore
+      }
+
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
         const parsed = JSON.parse(stored);
@@ -813,6 +868,15 @@ export function ResortStoreProvider({ children }: { children: React.ReactNode })
               )
             ),
           }));
+
+          // If all stored bookings are in the past, re-anchor relative to today
+          const todayISO = getTodayISO();
+          const hasActiveOrUpcoming = parsed.bookings.some(
+            (b: BookingItem) => b.checkOut >= todayISO
+          );
+          if (!hasActiveOrUpcoming) {
+            parsed.bookings = generateInitialBookings(todayISO);
+          }
 
           // If stored room categories are missing, initialize them cleanly
           if (!parsed.roomCategories || parsed.roomCategories.length !== ROOM_CATEGORIES.length) {

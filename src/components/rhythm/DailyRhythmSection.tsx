@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Sparkles, Clock, ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 
 interface CadenceStep {
   id: string;
@@ -616,242 +616,299 @@ const CADENCE_STEPS: CadenceStep[] = [
   },
 ];
 
+function polarToXY(cx: number, cy: number, r: number, angleDeg: number) {
+  const rad = (angleDeg * Math.PI) / 180;
+  return {
+    x: Number((cx + r * Math.cos(rad)).toFixed(2)),
+    y: Number((cy + r * Math.sin(rad)).toFixed(2)),
+  };
+}
+
+function buildWedgePath(cx: number, cy: number, rOuter: number, rInner: number, index: number) {
+  const startAngle = -90 + index * 72 + 2.5;
+  const endAngle = -90 + (index + 1) * 72 - 2.5;
+  const p1 = polarToXY(cx, cy, rOuter, startAngle);
+  const p2 = polarToXY(cx, cy, rOuter, endAngle);
+  const p3 = polarToXY(cx, cy, rInner, endAngle);
+  const p4 = polarToXY(cx, cy, rInner, startAngle);
+  return `M ${p1.x} ${p1.y} A ${rOuter} ${rOuter} 0 0 1 ${p2.x} ${p2.y} L ${p3.x} ${p3.y} A ${rInner} ${rInner} 0 0 0 ${p4.x} ${p4.y} Z`;
+}
+
+function PomeloDayWheel({
+  activeStep,
+  onSelect,
+  showNumbers = false,
+  className = "w-48 h-48",
+}: {
+  activeStep: number;
+  onSelect: (index: number) => void;
+  showNumbers?: boolean;
+  className?: string;
+}) {
+  return (
+    <svg viewBox="0 0 220 220" className={`${className} select-none`} aria-label="Five segments of the day">
+      {/* Outer Citrus Rind */}
+      <circle cx="110" cy="110" r="100" fill="#7D9B55" />
+      {/* Ivory Pith */}
+      <circle cx="110" cy="110" r="89" fill="#FAF8F3" />
+      {/* 5 Interactive Wedges */}
+      {[0, 1, 2, 3, 4].map((idx) => {
+        const isActive = activeStep === idx;
+        const midAngle = -90 + idx * 72 + 36;
+        const labelPos = polarToXY(110, 110, 54, midAngle);
+        return (
+          <g
+            key={idx}
+            onClick={() => onSelect(idx)}
+            className="cursor-pointer group"
+            role="button"
+            tabIndex={0}
+            aria-label={`Select stage ${idx + 1}: ${CADENCE_STEPS[idx].period}`}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                onSelect(idx);
+              }
+            }}
+          >
+            <path
+              d={buildWedgePath(110, 110, 82, 18, idx)}
+              fill={isActive ? "#D47A5B" : "#F3DCD4"}
+              className="transition-colors duration-200 group-hover:opacity-90"
+            />
+            {showNumbers && (
+              <text
+                x={labelPos.x}
+                y={labelPos.y}
+                textAnchor="middle"
+                dominantBaseline="central"
+                className={`text-[11px] font-mono font-bold pointer-events-none ${
+                  isActive ? "fill-white" : "fill-[#7A5E56]"
+                }`}
+              >
+                {idx + 1}
+              </text>
+            )}
+          </g>
+        );
+      })}
+      {/* Center Pith */}
+      <circle cx="110" cy="110" r="14" fill="#FAF8F3" />
+    </svg>
+  );
+}
+
+function MiniPomeloWedge({ index, isActive }: { index: number; isActive: boolean }) {
+  return (
+    <svg viewBox="0 0 32 32" className="w-6 h-6 shrink-0" aria-hidden="true">
+      <circle cx="16" cy="16" r="14.5" fill="#7D9B55" opacity={isActive ? 1 : 0.45} />
+      <circle cx="16" cy="16" r="12.5" fill="#FAF8F3" />
+      {[0, 1, 2, 3, 4].map((w) => (
+        <path
+          key={w}
+          d={buildWedgePath(16, 16, 11.5, 2.5, w)}
+          fill={w === index ? (isActive ? "#D47A5B" : "#B98D7E") : "#EEDBD4"}
+        />
+      ))}
+      <circle cx="16" cy="16" r="2" fill="#FAF8F3" />
+    </svg>
+  );
+}
+
 export function DailyRhythmSection() {
   const [activeStep, setActiveStep] = useState<number>(0);
+  const [mobileOpenStep, setMobileOpenStep] = useState<number | null>(0);
+  const current = CADENCE_STEPS[activeStep];
 
-  const handlePrev = () => {
-    setActiveStep((prev) => (prev > 0 ? prev - 1 : CADENCE_STEPS.length - 1));
+  const handleMobileSelect = (idx: number) => {
+    setActiveStep(idx);
+    setMobileOpenStep(idx);
   };
 
-  const handleNext = () => {
-    setActiveStep((prev) => (prev < CADENCE_STEPS.length - 1 ? prev + 1 : 0));
+  const handleMobileAccordionToggle = (idx: number) => {
+    setActiveStep(idx);
+    setMobileOpenStep((prev) => (prev === idx ? null : idx));
   };
 
   return (
     <section
       id="daily-rhythm"
-      className="py-16 sm:py-24 bg-[#FAF8F3] border-b border-[rgba(139,130,88,0.2)] scroll-mt-20 overflow-hidden relative"
+      className="py-16 sm:py-24 bg-[#FAF8F3] scroll-mt-20 overflow-hidden"
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        {/* Section Header */}
-        <div className="text-center max-w-2xl mx-auto mb-10 sm:mb-14 space-y-3">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#7BA23F]/10 border border-[#7BA23F]/25 text-[#5A7E24] text-[11px] font-mono uppercase tracking-widest font-semibold">
-            <Clock className="w-3.5 h-3.5 text-[#7BA23F]" />
-            <span>The Daily Rhythm • Slow Living</span>
-          </div>
-          <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl text-[#141715] tracking-tight">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="max-w-xl mb-10 sm:mb-12 space-y-2.5">
+          <span className="text-[11px] font-mono uppercase tracking-widest text-[#788E73] font-semibold block">
+            Five Segments, One Day
+          </span>
+          <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl text-[#141715] font-normal tracking-tight leading-[1.1]">
             A Day from Dawn to Starlight
           </h2>
-          <p className="text-xs sm:text-sm text-[#56635A] max-w-lg mx-auto leading-relaxed font-sans">
-            Experience how time unfolds when dictated only by the sun, the orchard breeze, and the
-            wood-fired clay hearth.
+          <p className="text-xs sm:text-sm text-[#56635A] leading-relaxed">
+            Cut a pomelo open and it falls into five. So does a day here, each segment its own
+            hour, its own light, its own thing worth getting up for.
           </p>
         </div>
 
         {/* =========================================================================
-            DESKTOP CONNECTING VINE & 5 DETAILED MILESTONE SELECTORS
+            DESKTOP LAYOUT: Left Pomelo Wheel + 5-Row Selector | Right Stage Showcase
            ========================================================================= */}
-        <div className="hidden lg:block relative">
-          {/* Continuous Traveling Botanical Vine */}
-          <div className="relative mb-5">
-            <svg
-              viewBox="0 0 1000 32"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-              className="w-full h-8 text-[#8B8258]"
-            >
-              <path
-                d="M 50 16 Q 160 8, 250 16 T 450 16 T 650 16 T 850 16 T 950 16"
-                stroke="#D3C9B2"
-                strokeWidth="2"
-                strokeDasharray="4 4"
+        <div className="hidden lg:grid lg:grid-cols-12 gap-12 items-start">
+          {/* Left Column */}
+          <div className="lg:col-span-4 space-y-8">
+            <div className="flex justify-center">
+              <PomeloDayWheel
+                activeStep={activeStep}
+                onSelect={setActiveStep}
+                showNumbers={true}
+                className="w-52 h-52"
               />
-              <path
-                d={`M 50 16 Q 160 8, 250 16 T 450 16 T 650 16 T 850 16 T 950 16`}
-                stroke="#7BA23F"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                className="transition-all duration-700"
-                style={{
-                  strokeDasharray: "900",
-                  strokeDashoffset: `${900 - ((activeStep + 1) / 5) * 900}`,
-                }}
-              />
-              {[100, 300, 500, 700, 900].map((cx, idx) => (
-                <g key={idx} className="transition-all duration-300">
-                  <circle
-                    cx={cx}
-                    cy="16"
-                    r={activeStep === idx ? "7" : "5"}
-                    fill={activeStep >= idx ? "#7BA23F" : "#FAF8F3"}
-                    stroke="#141715"
-                    strokeWidth="1.5"
-                  />
-                  {activeStep === idx && (
-                    <circle cx={cx} cy="16" r="10" stroke="#7BA23F" strokeWidth="1" strokeDasharray="2 2" />
-                  )}
-                </g>
-              ))}
-            </svg>
-          </div>
+            </div>
 
-          {/* 5 Milestone Interactive Cards with Motion Vectors */}
-          <div className="grid grid-cols-5 gap-3.5 mb-8">
-            {CADENCE_STEPS.map((step, idx) => {
-              const isSelected = activeStep === idx;
-              return (
-                <button
-                  key={step.id}
-                  type="button"
-                  onClick={() => setActiveStep(idx)}
-                  className={`group p-4 rounded-2xl text-left transition-all duration-300 border flex flex-col justify-between cursor-pointer min-h-[170px] ${
-                    isSelected
-                      ? "bg-white shadow-xl border-[#141715] scale-[1.03] ring-1 ring-[#141715]/10"
-                      : "bg-[#F2EDE2]/70 hover:bg-white/95 border-[rgba(139,130,88,0.22)] hover:border-[rgba(139,130,88,0.4)]"
-                  }`}
-                >
-                  <div className="flex items-start justify-between gap-1 w-full mb-2">
-                    <span className="font-mono text-xs font-bold text-[#141715] px-2.5 py-0.5 rounded-full bg-white/90 border border-[rgba(139,130,88,0.2)] shrink-0">
+            <div className="space-y-1.5">
+              {CADENCE_STEPS.map((step, idx) => {
+                const isSelected = activeStep === idx;
+                return (
+                  <button
+                    key={step.id}
+                    type="button"
+                    onClick={() => setActiveStep(idx)}
+                    className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-left transition-colors cursor-pointer ${
+                      isSelected
+                        ? "bg-[#EDF2EE] text-[#141715]"
+                        : "hover:bg-[#F2EDE2]/60 text-[#56635A]"
+                    }`}
+                  >
+                    <MiniPomeloWedge index={idx} isActive={isSelected} />
+                    <span className="text-[11px] font-mono text-[#8B8258] w-16 shrink-0">
                       {step.time}
                     </span>
-                    <div className="shrink-0 flex items-center justify-center">
-                      {step.renderMotionSvg(isSelected, false, "desk-card")}
-                    </div>
-                  </div>
-
-                  <div>
-                    <span className="text-[10px] font-mono uppercase tracking-widest text-[#788E73] font-bold block mb-1">
+                    <span
+                      className={`font-serif text-sm leading-snug ${
+                        isSelected ? "font-semibold text-[#141715]" : "font-normal"
+                      }`}
+                    >
                       {step.period}
                     </span>
-                    <h4 className="font-serif text-sm font-bold text-[#141715] line-clamp-2 leading-snug">
-                      {step.title}
-                    </h4>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* =========================================================================
-            MOBILE SWIPEABLE CADENCE CARDS WITH MINI MOTION VECTORS
-            Ensures mobile users get the identical 5 stage cards and vectors!
-           ========================================================================= */}
-        <div className="lg:hidden mb-6">
-          <div className="flex items-center justify-between gap-2 mb-3 px-1">
-            <span className="text-[11px] font-mono uppercase tracking-wider text-[#788E73] font-bold">
-              Stage {activeStep + 1} of 5 • {CADENCE_STEPS[activeStep].period}
-            </span>
-            <div className="flex items-center gap-1.5">
-              <button
-                type="button"
-                onClick={handlePrev}
-                className="w-8 h-8 rounded-full bg-white border border-[rgba(139,130,88,0.25)] flex items-center justify-center text-[#141715] hover:bg-[#F2EDE2] transition-colors shadow-xs"
-                aria-label="Previous Cadence Stage"
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </button>
-              <button
-                type="button"
-                onClick={handleNext}
-                className="w-8 h-8 rounded-full bg-white border border-[rgba(139,130,88,0.25)] flex items-center justify-center text-[#141715] hover:bg-[#F2EDE2] transition-colors shadow-xs"
-                aria-label="Next Cadence Stage"
-              >
-                <ChevronRight className="w-4 h-4" />
-              </button>
+                  </button>
+                );
+              })}
             </div>
           </div>
 
-          {/* Mobile Horizontal Swipeable Cards with Live Animated Vectors */}
-          <div className="flex items-stretch gap-3 overflow-x-auto pb-3 pt-1 px-1 no-scrollbar snap-x snap-mandatory">
-            {CADENCE_STEPS.map((step, idx) => {
-              const isSelected = activeStep === idx;
-              return (
-                <button
-                  key={step.id}
-                  type="button"
-                  onClick={() => setActiveStep(idx)}
-                  className={`snap-start w-[210px] shrink-0 p-3.5 rounded-2xl text-left transition-all duration-200 border flex flex-col justify-between ${
-                    isSelected
-                      ? "bg-white shadow-md border-[#141715] ring-1 ring-[#141715]/10"
-                      : "bg-[#F2EDE2]/70 border-[rgba(139,130,88,0.22)]"
-                  }`}
-                >
-                  <div className="flex items-center justify-between gap-1 w-full mb-2">
-                    <span className="font-mono text-[11px] font-bold text-[#141715] px-2 py-0.5 rounded-full bg-white border border-[rgba(139,130,88,0.2)]">
-                      {step.time}
-                    </span>
-                    <div className="shrink-0 flex items-center justify-center">
-                      {step.renderMotionSvg(isSelected, false, `mob-card-${step.id}`)}
-                    </div>
-                  </div>
-                  <div>
-                    <span className="text-[10px] font-mono uppercase tracking-widest text-[#788E73] font-bold block mb-0.5">
-                      {step.period}
-                    </span>
-                    <h4 className="font-serif text-xs font-bold text-[#141715] line-clamp-2 leading-snug">
-                      {step.title}
-                    </h4>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* =========================================================================
-            ACTIVE CADENCE DETAILED SHOWCASE FRAME (Visible on Both Desktop & Mobile!)
-            This solves the user issue: "also for mobile that another frame we have in desktop it is missing"
-           ========================================================================= */}
-        <div className="bg-white rounded-3xl p-6 sm:p-10 border border-[rgba(139,130,88,0.25)] shadow-md grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-center">
-          {/* Left Column: Descriptive Narrative & Micro Details */}
-          <div className="lg:col-span-8 space-y-4">
-            <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
-              <span className="px-3.5 py-1 rounded-full text-xs font-mono font-bold bg-[#141715] text-[#FAF8F3]">
-                {CADENCE_STEPS[activeStep].time}
-              </span>
-              <span
-                className={`px-3 py-1 rounded-full text-xs font-mono uppercase tracking-wider font-semibold border ${CADENCE_STEPS[activeStep].pillColor}`}
-              >
-                {CADENCE_STEPS[activeStep].sensoryBadge}
-              </span>
-            </div>
-
-            <h3 className="font-serif text-2xl sm:text-3xl lg:text-4xl text-[#141715] leading-tight font-bold">
-              {CADENCE_STEPS[activeStep].title}
-            </h3>
-
-            <p className="text-xs sm:text-sm text-[#56635A] leading-relaxed max-w-2xl font-sans">
-              {CADENCE_STEPS[activeStep].narrative}
-            </p>
-
-            <div className="p-3.5 sm:p-4 rounded-xl bg-[#FAF8F3] border border-[rgba(139,130,88,0.2)] flex items-start gap-3 text-xs text-[#56635A]">
-              <Sparkles className="w-4 h-4 text-[#7BA23F] shrink-0 mt-0.5" />
-              <div>
-                <span className="font-bold text-[#141715] block font-mono text-[11px] uppercase tracking-wider mb-0.5">
-                  Orchard Sensory Detail
-                </span>
-                <span className="leading-relaxed">{CADENCE_STEPS[activeStep].sensoryDetail}</span>
+          {/* Right Column */}
+          <div className="lg:col-span-8 space-y-6">
+            <div className="bg-white rounded-2xl border border-[rgba(139,130,88,0.18)] p-10 min-h-[250px] flex items-center justify-center shadow-2xs">
+              <div className="scale-125">
+                {current.renderMotionSvg(true, true, "desk-showcase")}
               </div>
             </div>
-          </div>
 
-          {/* Right Column: Prominent Realistic Motion Vector Artwork */}
-          <div className="lg:col-span-4 flex flex-col items-center justify-center p-6 sm:p-8 rounded-2xl bg-[#F2EDE2]/70 border border-[rgba(139,130,88,0.2)] text-center space-y-3">
-            <div className="p-4 sm:p-6 rounded-2xl bg-white shadow-sm border border-[rgba(139,130,88,0.2)] flex items-center justify-center">
-              {CADENCE_STEPS[activeStep].renderMotionSvg(true, true, "showcase")}
+            <div className="space-y-3">
+              <span className="text-[11px] font-mono uppercase tracking-widest text-[#8B8258] font-semibold block">
+                {current.time} · {current.period}
+              </span>
+              <h3 className="font-serif text-3xl lg:text-4xl text-[#141715] font-normal leading-tight">
+                {current.title}
+              </h3>
+              <p className="text-sm text-[#56635A] leading-relaxed max-w-2xl">
+                {current.narrative}
+              </p>
             </div>
-            <div>
-              <span className="font-serif text-base sm:text-lg font-bold text-[#141715] block">
-                {CADENCE_STEPS[activeStep].period}
+
+            <div className="p-4 rounded-xl bg-[#EDF2EE]/80 border border-[#788E73]/15 max-w-2xl">
+              <span className="text-[10px] font-mono uppercase tracking-widest text-[#56635A] font-bold block mb-1">
+                Orchard Sensory Detail
               </span>
-              <span className="text-[11px] font-mono text-[#788E73]">
-                {CADENCE_STEPS[activeStep].time} • Saphale Foothills
-              </span>
+              <p className="text-xs sm:text-sm text-[#141715]/85 leading-relaxed">
+                {current.sensoryDetail}
+              </p>
             </div>
           </div>
         </div>
 
+        {/* =========================================================================
+            MOBILE LAYOUT: Pomelo Wheel + Clean 5-Stage Accordion
+           ========================================================================= */}
+        <div className="lg:hidden space-y-6">
+          <div className="flex flex-col items-center text-center space-y-3 pb-2">
+            <PomeloDayWheel
+              activeStep={activeStep}
+              onSelect={handleMobileSelect}
+              showNumbers={false}
+              className="w-44 h-44"
+            />
+            <div>
+              <span className="text-[11px] font-mono uppercase tracking-widest text-[#8B8258] font-semibold block">
+                {current.time}
+              </span>
+              <span className="font-serif text-xl text-[#141715] font-medium block mt-0.5">
+                {current.period}
+              </span>
+            </div>
+          </div>
+
+          <div className="divide-y divide-[rgba(139,130,88,0.18)] border-y border-[rgba(139,130,88,0.18)]">
+            {CADENCE_STEPS.map((step, idx) => {
+              const isOpen = mobileOpenStep === idx;
+              return (
+                <div key={step.id} className="py-1">
+                  <button
+                    type="button"
+                    onClick={() => handleMobileAccordionToggle(idx)}
+                    aria-expanded={isOpen}
+                    className="w-full py-3.5 flex items-center justify-between gap-3 text-left cursor-pointer"
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <MiniPomeloWedge index={idx} isActive={isOpen} />
+                      <span className="text-[11px] font-mono text-[#8B8258] w-16 shrink-0">
+                        {step.time}
+                      </span>
+                      <span
+                        className={`font-serif text-base truncate ${
+                          isOpen ? "font-semibold text-[#141715]" : "text-[#56635A]"
+                        }`}
+                      >
+                        {step.period}
+                      </span>
+                    </div>
+                    <ChevronDown
+                      className={`w-4 h-4 text-[#8B8258] shrink-0 transition-transform duration-200 ${
+                        isOpen ? "rotate-180 text-[#141715]" : ""
+                      }`}
+                    />
+                  </button>
+
+                  {isOpen && (
+                    <div className="pb-6 pt-2 space-y-4 pl-0 sm:pl-9">
+                      <div className="bg-white rounded-2xl border border-[rgba(139,130,88,0.16)] p-6 flex items-center justify-center shadow-2xs">
+                        {step.renderMotionSvg(true, true, `mob-showcase-${step.id}`)}
+                      </div>
+
+                      <div className="space-y-2">
+                        <h3 className="font-serif text-2xl text-[#141715] font-normal leading-snug">
+                          {step.title}
+                        </h3>
+                        <p className="text-xs text-[#56635A] leading-relaxed">
+                          {step.narrative}
+                        </p>
+                      </div>
+
+                      <div className="p-3.5 rounded-xl bg-[#EDF2EE]/80 border border-[#788E73]/15">
+                        <span className="text-[10px] font-mono uppercase tracking-widest text-[#56635A] font-bold block mb-1">
+                          Orchard Sensory Detail
+                        </span>
+                        <p className="text-xs text-[#141715]/85 leading-relaxed">
+                          {step.sensoryDetail}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
       </div>
     </section>
   );

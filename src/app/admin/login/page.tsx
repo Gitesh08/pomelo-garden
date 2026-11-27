@@ -21,6 +21,16 @@ export default function AdminLoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  React.useEffect(() => {
+    if (typeof window !== "undefined") {
+      const hasCookie = document.cookie.includes("pomelo_admin_session=authenticated");
+      const hasLocal = localStorage.getItem("pomelo_admin_session") === "authenticated";
+      if (hasCookie || hasLocal) {
+        router.replace("/admin/dashboard");
+      }
+    }
+  }, [router]);
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
