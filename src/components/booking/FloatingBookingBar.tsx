@@ -51,9 +51,9 @@ export function FloatingBookingBar({
   const nights = React.useMemo(() => {
     if (!startDate || !endDate) return 1;
     if (startDate === endDate) return 1;
-    const s = new Date(startDate).getTime();
-    const e = new Date(endDate).getTime();
-    const diff = Math.round((e - s) / (1000 * 60 * 60 * 24));
+    const [sy, sm, sd] = startDate.split("-").map(Number);
+    const [ey, em, ed] = endDate.split("-").map(Number);
+    const diff = Math.round((Date.UTC(ey, em - 1, ed) - Date.UTC(sy, sm - 1, sd)) / (1000 * 60 * 60 * 24));
     return diff > 0 ? diff : 1;
   }, [startDate, endDate]);
 

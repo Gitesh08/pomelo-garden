@@ -12,10 +12,6 @@ interface LuxuryDateModalProps {
   onApply: (start: string, end: string) => void;
 }
 
-// Stable base date for SSR
-const BASE_YEAR = 2026;
-const BASE_MONTH = 10; // 0-indexed: 10 = November
-
 const MONTH_NAMES = [
   "January",
   "February",
@@ -33,6 +29,14 @@ const MONTH_NAMES = [
 
 const DAY_LABELS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
 
+function getTodayISO(): string {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, "0");
+  const d = String(now.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
 function formatISODate(year: number, month: number, day: number): string {
   const m = String(month + 1).padStart(2, "0");
   const d = String(day).padStart(2, "0");
@@ -41,12 +45,12 @@ function formatISODate(year: number, month: number, day: number): string {
 
 function parseISODate(dateStr: string): { year: number; month: number; day: number } | null {
   if (!dateStr) return null;
-  const parts = dateStr.split("-");
-  if (parts.length !== 3) return null;
+  const parts = dateStr.split("-").map(Number);
+  if (parts.length !== 3 || !parts[0] || !parts[1] || !parts[2]) return null;
   return {
-    year: parseInt(parts[0], 10),
-    month: parseInt(parts[1], 10) - 1,
-    day: parseInt(parts[2], 10),
+    year: parts[0],
+    month: parts[1] - 1,
+    day: parts[2],
   };
 }
 
@@ -60,30 +64,53 @@ export function LuxuryDateModal({
   const { getAvailabilityForDate } = useResortStore();
 
   // Current viewed month (left month on desktop, single month on mobile)
-  const [viewYear, setViewYear] = useState<number>(BASE_YEAR);
-  const [viewMonth, setViewMonth] = useState<number>(BASE_MONTH);
+  const [viewYear, setViewYear] = useState<number>(() => {
+    if (startDate) {
+      const p = parseISODate(startDate);
+      if (p) return p.year;
+    }
+    return new Date().getFullYear();
+  });
+  const [viewMonth, setViewMonth] = useState<number>(() => {
+    if (startDate) {
+      const p = parseISODate(startDate);
+      if (p) return p.month;
+    }
+    return new Date().getMonth();
+  });
 
-  // Local selection state while modal is open
-  const [selStart, setSelStart] = useState<string>(startDate || "2026-11-26");
-  const [selEnd, setSelEnd] = useState<string>(endDate || "2026-11-28");
+  // Local selection state while modal is open: start empty unless passed in
+  const [selStart, setSelStart] = useState<string>(startDate || "");
+  const [selEnd, setSelEnd] = useState<string>(endDate || "");
   const [hoverDate, setHoverDate] = useState<string | null>(null);
 
   // Reset local state when opened
   React.useEffect(() => {
     if (isOpen) {
+      setSelStart(startDate || "");
+      setSelEnd(endDate || "");
       if (startDate) {
-        setSelStart(startDate);
         const parsed = parseISODate(startDate);
         if (parsed) {
           setViewYear(parsed.year);
           setViewMonth(parsed.month);
         }
+      } else {
+        const now = new Date();
+        setViewYear(now.getFullYear());
+        setViewMonth(now.getMonth());
       }
-      if (endDate) setSelEnd(endDate);
     }
   }, [isOpen, startDate, endDate]);
 
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const currentMonth = now.getMonth();
+  const isPrevDisabled =
+    viewYear < currentYear || (viewYear === currentYear && viewMonth <= currentMonth);
+
   const handlePrevMonth = () => {
+    if (isPrevDisabled) return;
     if (viewMonth === 0) {
       setViewMonth(11);
       setViewYear((y) => y - 1);
@@ -105,19 +132,21 @@ export function LuxuryDateModal({
   const nextMonthYear = viewMonth === 11 ? viewYear + 1 : viewYear;
   const nextMonthIndex = viewMonth === 11 ? 0 : viewMonth + 1;
 
-  // Check if any date in a range is fully booked
+  // Check if any date in a range is fully booked (Safari and timezone safe UTC iteration)
   const hasSoldOutDateInRange = (startStr: string, endStr: string) => {
-    const s = new Date(startStr);
-    const e = new Date(endStr);
-    const curr = new Date(s);
-    while (curr <= e) {
-      const y = curr.getFullYear();
-      const m = String(curr.getMonth() + 1).padStart(2, "0");
-      const d = String(curr.getDate()).padStart(2, "0");
-      const dStr = `${y}-${m}-${d}`;
+    const [sy, sm, sd] = startStr.split("-").map(Number);
+    const [ey, em, ed] = endStr.split("-").map(Number);
+    const startUtc = Date.UTC(sy, sm - 1, sd);
+    const endUtc = Date.UTC(ey, em - 1, ed);
+    const oneDay = 86400000;
+    for (let t = startUtc; t <= endUtc; t += oneDay) {
+      const d = new Date(t);
+      const y = d.getUTCFullYear();
+      const m = String(d.getUTCMonth() + 1).padStart(2, "0");
+      const day = String(d.getUTCDate()).padStart(2, "0");
+      const dStr = `${y}-${m}-${day}`;
       const av = getAvailabilityForDate(dStr);
       if (av.totalAvailable === 0) return true;
-      curr.setDate(curr.getDate() + 1);
     }
     return false;
   };
@@ -153,13 +182,13 @@ export function LuxuryDateModal({
     }
   };
 
-  // Calculate nights count
+  // Calculate nights count (Safari safe UTC arithmetic)
   const nightsCount = useMemo(() => {
     if (!selStart || !selEnd) return 0;
     if (selStart === selEnd) return 1; // day picnic
-    const s = new Date(selStart).getTime();
-    const e = new Date(selEnd).getTime();
-    const diff = Math.round((e - s) / (1000 * 60 * 60 * 24));
+    const [sy, sm, sd] = selStart.split("-").map(Number);
+    const [ey, em, ed] = selEnd.split("-").map(Number);
+    const diff = Math.round((Date.UTC(ey, em - 1, ed) - Date.UTC(sy, sm - 1, sd)) / (1000 * 60 * 60 * 24));
     return diff > 0 ? diff : 0;
   }, [selStart, selEnd]);
 
@@ -190,6 +219,7 @@ export function LuxuryDateModal({
   const renderMonthGrid = (year: number, month: number) => {
     const firstDayIndex = new Date(year, month, 1).getDay();
     const totalDays = new Date(year, month + 1, 0).getDate();
+    const todayStr = getTodayISO();
 
     const days: (number | null)[] = [];
     for (let i = 0; i < firstDayIndex; i++) {
@@ -226,26 +256,28 @@ export function LuxuryDateModal({
             }
 
             const dateStr = formatISODate(year, month, day);
-            const isToday = dateStr === "2026-11-26";
-            const isPast = dateStr < "2026-11-26";
+            const isToday = dateStr === todayStr;
+            const isPast = dateStr < todayStr;
 
-            // Availability check
-            const avail = getAvailabilityForDate(dateStr);
-            const isSoldOut = avail.totalAvailable === 0 && !isPast;
-            const isLimited = avail.totalAvailable === 1 && !isPast;
+            // Availability check: ONLY for today and future dates!
+            const avail = isPast ? null : getAvailabilityForDate(dateStr);
+            const isSoldOut = !isPast && (avail?.totalAvailable === 0);
+            const isLimited = !isPast && (avail?.totalAvailable === 1);
 
             // Selection flags
             const isStart = selStart === dateStr;
             const isEnd = selEnd === dateStr;
-            const isInRange =
-              selStart && selEnd && dateStr > selStart && dateStr < selEnd;
-            const isHoverRange =
+            const isInRange = Boolean(
+              selStart && selEnd && dateStr > selStart && dateStr < selEnd
+            );
+            const isHoverRange = Boolean(
               selStart &&
               !selEnd &&
               hoverDate &&
               hoverDate > selStart &&
               dateStr > selStart &&
-              dateStr <= hoverDate;
+              dateStr <= hoverDate
+            );
 
             const isHighlighted = isStart || isEnd || isInRange || isHoverRange;
 
@@ -280,7 +312,7 @@ export function LuxuryDateModal({
                   type="button"
                   disabled={isPast || isSoldOut}
                   onClick={() => handleDayClick(dateStr, isPast, isSoldOut)}
-                  className={`relative z-10 w-9 h-9 sm:w-10 sm:h-10 flex flex-col items-center justify-center text-xs sm:text-sm font-medium transition-all ${
+                  className={`relative z-10 w-9 h-9 sm:w-10 sm:h-10 flex flex-col items-center justify-center text-xs sm:text-sm font-medium transition-all select-none ${
                     isStart || isEnd
                       ? "rounded-full bg-[#141715] text-[#FAF8F3] font-bold shadow-sm"
                       : isInRange
@@ -349,7 +381,12 @@ export function LuxuryDateModal({
             <button
               type="button"
               onClick={handlePrevMonth}
-              className="p-2 rounded-full bg-white hover:bg-[#F2EDE2] border border-[#E2E7E4] text-[#141715] shadow-xs pointer-events-auto transition-colors cursor-pointer"
+              disabled={isPrevDisabled}
+              className={`p-2 rounded-full bg-white border border-[#E2E7E4] text-[#141715] shadow-xs pointer-events-auto transition-colors ${
+                isPrevDisabled
+                  ? "opacity-30 cursor-not-allowed pointer-events-none"
+                  : "hover:bg-[#F2EDE2] cursor-pointer"
+              }`}
               aria-label="Previous Month"
             >
               <ChevronLeft className="w-4 h-4" />

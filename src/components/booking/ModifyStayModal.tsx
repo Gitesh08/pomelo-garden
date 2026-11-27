@@ -21,6 +21,14 @@ const MONTH_NAMES = [
 
 const WEEKDAYS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
 
+function getTodayISO(): string {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, "0");
+  const d = String(now.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
 export function ModifyStayModal({
   isOpen,
   onClose,
@@ -37,9 +45,21 @@ export function ModifyStayModal({
   const [tempAdults, setTempAdults] = useState<number>(initialAdults || 2);
   const [tempChildren, setTempChildren] = useState<number>(initialChildren || 0);
 
-  // Month navigation: default to November 2026
-  const [viewYear, setViewYear] = useState<number>(2026);
-  const [viewMonth, setViewMonth] = useState<number>(10); // 0-indexed: 10 = Nov
+  // Month navigation: defaults to current local month and year
+  const [viewYear, setViewYear] = useState<number>(() => {
+    if (initialStart) {
+      const parts = initialStart.split("-").map(Number);
+      if (parts[0]) return parts[0];
+    }
+    return new Date().getFullYear();
+  });
+  const [viewMonth, setViewMonth] = useState<number>(() => {
+    if (initialStart) {
+      const parts = initialStart.split("-").map(Number);
+      if (parts[1]) return parts[1] - 1;
+    }
+    return new Date().getMonth();
+  });
 
   React.useEffect(() => {
     if (isOpen) {
@@ -48,16 +68,27 @@ export function ModifyStayModal({
       setTempAdults(initialAdults || 2);
       setTempChildren(initialChildren || 0);
       if (initialStart) {
-        const parts = initialStart.split("-");
-        if (parts.length === 3) {
-          setViewYear(parseInt(parts[0], 10));
-          setViewMonth(parseInt(parts[1], 10) - 1);
+        const parts = initialStart.split("-").map(Number);
+        if (parts.length === 3 && parts[0] && parts[1]) {
+          setViewYear(parts[0]);
+          setViewMonth(parts[1] - 1);
         }
+      } else {
+        const now = new Date();
+        setViewYear(now.getFullYear());
+        setViewMonth(now.getMonth());
       }
     }
   }, [isOpen, initialStart, initialEnd, initialAdults, initialChildren]);
 
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const currentMonth = now.getMonth();
+  const isPrevDisabled =
+    viewYear < currentYear || (viewYear === currentYear && viewMonth <= currentMonth);
+
   const handlePrevMonth = () => {
+    if (isPrevDisabled) return;
     if (viewMonth === 0) {
       setViewMonth(11);
       setViewYear((y) => y - 1);
@@ -76,6 +107,9 @@ export function ModifyStayModal({
   };
 
   const handleDateClick = (dateStr: string) => {
+    const today = getTodayISO();
+    if (dateStr < today) return;
+
     const dayAvail = getAvailabilityForDate(dateStr);
     if (dayAvail.isFullyBooked) return;
 
@@ -83,7 +117,7 @@ export function ModifyStayModal({
       setTempStart(dateStr);
       setTempEnd("");
     } else {
-      if (new Date(dateStr) < new Date(tempStart)) {
+      if (dateStr < tempStart) {
         setTempStart(dateStr);
         setTempEnd("");
       } else {
@@ -95,9 +129,9 @@ export function ModifyStayModal({
   const nightsCount = React.useMemo(() => {
     if (!tempStart || !tempEnd) return 1;
     if (tempStart === tempEnd) return 1;
-    const s = new Date(tempStart).getTime();
-    const e = new Date(tempEnd).getTime();
-    const diff = Math.round((e - s) / (1000 * 60 * 60 * 24));
+    const [sy, sm, sd] = tempStart.split("-").map(Number);
+    const [ey, em, ed] = tempEnd.split("-").map(Number);
+    const diff = Math.round((Date.UTC(ey, em - 1, ed) - Date.UTC(sy, sm - 1, sd)) / (1000 * 60 * 60 * 24));
     return diff > 0 ? diff : 1;
   }, [tempStart, tempEnd]);
 
@@ -112,6 +146,7 @@ export function ModifyStayModal({
     const firstDay = new Date(year, monthIndex, 1).getDay();
     const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
     const days = [];
+    const todayStr = getTodayISO();
 
     for (let i = 0; i < firstDay; i++) {
       days.push(<div key={`empty-${i}`} className="h-9 w-9" />);
@@ -119,15 +154,19 @@ export function ModifyStayModal({
 
     for (let d = 1; d <= daysInMonth; d++) {
       const dateStr = `${year}-${String(monthIndex + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
-      const dayAvail = getAvailabilityForDate(dateStr);
-      const isSoldOut = dayAvail.isFullyBooked;
+      const isPast = dateStr < todayStr;
+      const isToday = dateStr === todayStr;
+      const dayAvail = isPast ? null : getAvailabilityForDate(dateStr);
+      const isSoldOut = !isPast && (dayAvail?.isFullyBooked || false);
       const isStart = tempStart === dateStr;
       const isEnd = tempEnd === dateStr;
-      const isInRange = tempStart && tempEnd && dateStr > tempStart && dateStr < tempEnd;
+      const isInRange = Boolean(tempStart && tempEnd && dateStr > tempStart && dateStr < tempEnd);
 
-      let btnClass = "h-9 w-9 text-xs font-medium rounded-full flex flex-col items-center justify-center transition-all ";
+      let btnClass = "h-9 w-9 text-xs font-medium rounded-full flex flex-col items-center justify-center transition-all select-none ";
 
-      if (isSoldOut) {
+      if (isPast) {
+        btnClass += "text-gray-300 cursor-not-allowed pointer-events-none ";
+      } else if (isSoldOut) {
         btnClass += "text-gray-300 line-through cursor-not-allowed bg-gray-50 ";
       } else if (isStart || isEnd) {
         btnClass += "bg-[#141715] text-[#FAF8F3] font-bold shadow-sm ";
@@ -141,11 +180,13 @@ export function ModifyStayModal({
         <button
           key={dateStr}
           type="button"
-          disabled={isSoldOut}
+          disabled={isPast || isSoldOut}
           onClick={() => handleDateClick(dateStr)}
           className={btnClass}
         >
-          <span>{d}</span>
+          <span className={isToday && !isStart && !isEnd ? "underline decoration-2 underline-offset-4 font-bold" : ""}>
+            {d}
+          </span>
         </button>
       );
     }
@@ -273,14 +314,21 @@ export function ModifyStayModal({
                 <button
                   type="button"
                   onClick={handlePrevMonth}
-                  className="p-1 rounded-full hover:bg-gray-100 text-gray-600 cursor-pointer"
+                  disabled={isPrevDisabled}
+                  className={`p-1 rounded-full text-gray-600 transition-colors ${
+                    isPrevDisabled
+                      ? "opacity-30 cursor-not-allowed pointer-events-none"
+                      : "hover:bg-gray-100 cursor-pointer"
+                  }`}
+                  aria-label="Previous month"
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </button>
                 <button
                   type="button"
                   onClick={handleNextMonth}
-                  className="p-1 rounded-full hover:bg-gray-100 text-gray-600 cursor-pointer"
+                  className="p-1 rounded-full hover:bg-gray-100 text-gray-600 cursor-pointer transition-colors"
+                  aria-label="Next month"
                 >
                   <ChevronRight className="w-4 h-4" />
                 </button>

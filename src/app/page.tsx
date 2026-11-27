@@ -793,7 +793,7 @@ export default function GuestLandingPage() {
             Dates Selected
           </span>
           <span className="text-xs font-bold text-[#141715] truncate font-sans">
-            {startDate.slice(5)} to {endDate.slice(5)}
+            {startDate && endDate ? `${startDate.slice(5)} to ${endDate.slice(5)}` : "Select Dates"}
           </span>
         </button>
 

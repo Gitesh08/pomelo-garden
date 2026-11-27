@@ -115,6 +115,7 @@ export interface MediaItem {
 interface ResortStoreData {
   packages: PackageItem[];
   rooms: RoomItem[];
+  roomCategories?: RoomCategory[];
   bookings: BookingItem[];
   media: MediaItem[];
   lastUpdated: string;
@@ -123,12 +124,19 @@ interface ResortStoreData {
 interface ResortStoreContextType {
   packages: PackageItem[];
   rooms: RoomItem[];
+  roomCategories: RoomCategory[];
   bookings: BookingItem[];
   media: MediaItem[];
   isLoaded: boolean;
   getAvailabilityForDate: (dateStr: string) => DayAvailability;
   getAvailabilityForDateRange: (startDate: string, endDate: string) => DayAvailability;
   updatePackageRate: (id: string, updates: Partial<PackageItem>) => void;
+  updateRoomCategory: (id: string, updates: Partial<RoomCategory>) => void;
+  updateRatesBatch: (
+    packageUpdates: { [id: string]: Partial<PackageItem> },
+    roomCategoryUpdates: { [id: string]: Partial<RoomCategory> }
+  ) => void;
+  updateRoom: (id: string, updates: Partial<RoomItem>) => void;
   addBooking: (booking: Omit<BookingItem, "id" | "createdAt">) => BookingItem;
   updateBookingStatus: (id: string, status: BookingItem["status"]) => void;
   updateBooking: (id: string, updates: Partial<BookingItem>) => void;
@@ -580,7 +588,8 @@ const ResortStoreContext = createContext<ResortStoreContextType | null>(null);
 export function calculateAvailabilityForDate(
   dateStr: string,
   rooms: RoomItem[],
-  bookings: BookingItem[]
+  bookings: BookingItem[],
+  roomCategories: RoomCategory[] = ROOM_CATEGORIES
 ): DayAvailability {
   const activeBookings = bookings.filter((b) => b.status !== "Cancelled");
 
@@ -618,7 +627,7 @@ export function calculateAvailabilityForDate(
   let totalBooked = 0;
   let totalHeld = 0;
 
-  const categoriesAvailability: RoomCategoryAvailability[] = ROOM_CATEGORIES.map((cat) => {
+  const categoriesAvailability: RoomCategoryAvailability[] = roomCategories.map((cat) => {
     const catRooms = rooms.filter((r) => r.categoryId === cat.id);
     let catAvailable = 0;
     let catBooked = 0;
@@ -676,10 +685,11 @@ export function calculateAvailabilityForDateRange(
   startDate: string,
   endDate: string,
   rooms: RoomItem[],
-  bookings: BookingItem[]
+  bookings: BookingItem[],
+  roomCategories: RoomCategory[] = ROOM_CATEGORIES
 ): DayAvailability {
   if (!endDate || startDate === endDate) {
-    return calculateAvailabilityForDate(startDate, rooms, bookings);
+    return calculateAvailabilityForDate(startDate, rooms, bookings, roomCategories);
   }
 
   const activeBookings = bookings.filter((b) => b.status !== "Cancelled");
@@ -722,7 +732,7 @@ export function calculateAvailabilityForDateRange(
   let totalBooked = 0;
   let totalHeld = 0;
 
-  const categoriesAvailability: RoomCategoryAvailability[] = ROOM_CATEGORIES.map((cat) => {
+  const categoriesAvailability: RoomCategoryAvailability[] = roomCategories.map((cat) => {
     const catRooms = rooms.filter((r) => r.categoryId === cat.id);
     let catAvailable = 0;
     let catBooked = 0;
@@ -780,6 +790,7 @@ export function ResortStoreProvider({ children }: { children: React.ReactNode })
   const [data, setData] = useState<ResortStoreData>({
     packages: DEFAULT_PACKAGES,
     rooms: DEFAULT_ROOMS,
+    roomCategories: ROOM_CATEGORIES,
     bookings: DEFAULT_BOOKINGS,
     media: DEFAULT_MEDIA,
     lastUpdated: "2026-11-26T00:00:00.000Z",
@@ -803,29 +814,33 @@ export function ResortStoreProvider({ children }: { children: React.ReactNode })
             ),
           }));
 
+          // If stored room categories are missing, initialize them cleanly
+          if (!parsed.roomCategories || parsed.roomCategories.length !== ROOM_CATEGORIES.length) {
+            parsed.roomCategories = ROOM_CATEGORIES;
+          }
+
           // If stored rooms are outdated (e.g. 6 rooms or missing categoryId), upgrade cleanly to 5 rooms
           if (!parsed.rooms || parsed.rooms.length !== 5 || !parsed.rooms[0]?.categoryId) {
             parsed.rooms = DEFAULT_ROOMS;
-            try {
-              localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed));
-            } catch {
-              // ignore
-            }
           }
-          setTimeout(() => {
-            setData(parsed);
-            setIsLoaded(true);
-          }, 0);
+
+          try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed));
+          } catch {
+            // ignore
+          }
+          setData(parsed);
+          setIsLoaded(true);
         } else {
-          setTimeout(() => setIsLoaded(true), 0);
+          setIsLoaded(true);
         }
       } else {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-        setTimeout(() => setIsLoaded(true), 0);
+        setIsLoaded(true);
       }
     } catch (e) {
       console.warn("Storage access restricted or unavailable:", e);
-      setTimeout(() => setIsLoaded(true), 0);
+      setIsLoaded(true);
     }
 
     let channel: BroadcastChannel | null = null;
@@ -856,8 +871,7 @@ export function ResortStoreProvider({ children }: { children: React.ReactNode })
     };
   }, []);
 
-  const broadcastAndSave = (newData: ResortStoreData) => {
-    setData(newData);
+  const saveAndBroadcast = (newData: ResortStoreData) => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(newData));
       if (typeof window !== "undefined" && "BroadcastChannel" in window) {
@@ -870,12 +884,90 @@ export function ResortStoreProvider({ children }: { children: React.ReactNode })
     }
   };
 
+  const updateRatesBatch = (
+    packageUpdates: { [id: string]: Partial<PackageItem> },
+    roomCategoryUpdates: { [id: string]: Partial<RoomCategory> }
+  ) => {
+    setData((prev) => {
+      let newPackages = prev.packages;
+      let newCategories = prev.roomCategories || ROOM_CATEGORIES;
+      let newRooms = prev.rooms;
+
+      if (Object.keys(packageUpdates).length > 0) {
+        newPackages = prev.packages.map((pkg) =>
+          packageUpdates[pkg.id] ? { ...pkg, ...packageUpdates[pkg.id] } : pkg
+        );
+      }
+
+      if (Object.keys(roomCategoryUpdates).length > 0) {
+        newCategories = newCategories.map((cat) =>
+          roomCategoryUpdates[cat.id] ? { ...cat, ...roomCategoryUpdates[cat.id] } : cat
+        );
+        newRooms = prev.rooms.map((r) => {
+          const catUpdate = roomCategoryUpdates[r.categoryId];
+          if (catUpdate && catUpdate.basePrice !== undefined) {
+            return { ...r, price: catUpdate.basePrice };
+          }
+          return r;
+        });
+      }
+
+      const nextData: ResortStoreData = {
+        ...prev,
+        packages: newPackages,
+        roomCategories: newCategories,
+        rooms: newRooms,
+        lastUpdated: new Date().toISOString(),
+      };
+      saveAndBroadcast(nextData);
+      return nextData;
+    });
+  };
+
   const updatePackageRate = (id: string, updates: Partial<PackageItem>) => {
-    const updated = data.packages.map((pkg) => (pkg.id === id ? { ...pkg, ...updates } : pkg));
-    broadcastAndSave({
-      ...data,
-      packages: updated,
-      lastUpdated: new Date().toISOString(),
+    setData((prev) => {
+      const updated = prev.packages.map((pkg) => (pkg.id === id ? { ...pkg, ...updates } : pkg));
+      const nextData: ResortStoreData = {
+        ...prev,
+        packages: updated,
+        lastUpdated: new Date().toISOString(),
+      };
+      saveAndBroadcast(nextData);
+      return nextData;
+    });
+  };
+
+  const updateRoomCategory = (id: string, updates: Partial<RoomCategory>) => {
+    setData((prev) => {
+      const currentCategories = prev.roomCategories || ROOM_CATEGORIES;
+      const updatedCategories = currentCategories.map((cat) =>
+        cat.id === id ? { ...cat, ...updates } : cat
+      );
+      const updatedRooms = updates.basePrice !== undefined
+        ? prev.rooms.map((r) => (r.categoryId === id ? { ...r, price: updates.basePrice! } : r))
+        : prev.rooms;
+
+      const nextData: ResortStoreData = {
+        ...prev,
+        roomCategories: updatedCategories,
+        rooms: updatedRooms,
+        lastUpdated: new Date().toISOString(),
+      };
+      saveAndBroadcast(nextData);
+      return nextData;
+    });
+  };
+
+  const updateRoom = (id: string, updates: Partial<RoomItem>) => {
+    setData((prev) => {
+      const updatedRooms = prev.rooms.map((r) => (r.id === id ? { ...r, ...updates } : r));
+      const nextData: ResortStoreData = {
+        ...prev,
+        rooms: updatedRooms,
+        lastUpdated: new Date().toISOString(),
+      };
+      saveAndBroadcast(nextData);
+      return nextData;
     });
   };
 
@@ -886,39 +978,55 @@ export function ResortStoreProvider({ children }: { children: React.ReactNode })
       id: newId,
       createdAt: new Date().toISOString(),
     };
-    const updated = [newBooking, ...data.bookings];
-    broadcastAndSave({
-      ...data,
-      bookings: updated,
-      lastUpdated: new Date().toISOString(),
+    setData((prev) => {
+      const updated = [newBooking, ...prev.bookings];
+      const nextData: ResortStoreData = {
+        ...prev,
+        bookings: updated,
+        lastUpdated: new Date().toISOString(),
+      };
+      saveAndBroadcast(nextData);
+      return nextData;
     });
     return newBooking;
   };
 
   const updateBookingStatus = (id: string, status: BookingItem["status"]) => {
-    const updated = data.bookings.map((b) => (b.id === id ? { ...b, status } : b));
-    broadcastAndSave({
-      ...data,
-      bookings: updated,
-      lastUpdated: new Date().toISOString(),
+    setData((prev) => {
+      const updated = prev.bookings.map((b) => (b.id === id ? { ...b, status } : b));
+      const nextData: ResortStoreData = {
+        ...prev,
+        bookings: updated,
+        lastUpdated: new Date().toISOString(),
+      };
+      saveAndBroadcast(nextData);
+      return nextData;
     });
   };
 
   const updateBooking = (id: string, updates: Partial<BookingItem>) => {
-    const updated = data.bookings.map((b) => (b.id === id ? { ...b, ...updates } : b));
-    broadcastAndSave({
-      ...data,
-      bookings: updated,
-      lastUpdated: new Date().toISOString(),
+    setData((prev) => {
+      const updated = prev.bookings.map((b) => (b.id === id ? { ...b, ...updates } : b));
+      const nextData: ResortStoreData = {
+        ...prev,
+        bookings: updated,
+        lastUpdated: new Date().toISOString(),
+      };
+      saveAndBroadcast(nextData);
+      return nextData;
     });
   };
 
   const deleteBooking = (id: string) => {
-    const updated = data.bookings.filter((b) => b.id !== id);
-    broadcastAndSave({
-      ...data,
-      bookings: updated,
-      lastUpdated: new Date().toISOString(),
+    setData((prev) => {
+      const updated = prev.bookings.filter((b) => b.id !== id);
+      const nextData: ResortStoreData = {
+        ...prev,
+        bookings: updated,
+        lastUpdated: new Date().toISOString(),
+      };
+      saveAndBroadcast(nextData);
+      return nextData;
     });
   };
 
@@ -929,49 +1037,65 @@ export function ResortStoreProvider({ children }: { children: React.ReactNode })
       id: newId,
       order: data.media.length + 1,
     };
-    const updated = [...data.media, newMedia];
-    broadcastAndSave({
-      ...data,
-      media: updated,
-      lastUpdated: new Date().toISOString(),
+    setData((prev) => {
+      const updated = [...prev.media, newMedia];
+      const nextData: ResortStoreData = {
+        ...prev,
+        media: updated,
+        lastUpdated: new Date().toISOString(),
+      };
+      saveAndBroadcast(nextData);
+      return nextData;
     });
     return newMedia;
   };
 
   const updateMedia = (id: string, updates: Partial<MediaItem>) => {
-    const updated = data.media.map((m) => (m.id === id ? { ...m, ...updates } : m));
-    broadcastAndSave({
-      ...data,
-      media: updated,
-      lastUpdated: new Date().toISOString(),
+    setData((prev) => {
+      const updated = prev.media.map((m) => (m.id === id ? { ...m, ...updates } : m));
+      const nextData: ResortStoreData = {
+        ...prev,
+        media: updated,
+        lastUpdated: new Date().toISOString(),
+      };
+      saveAndBroadcast(nextData);
+      return nextData;
     });
   };
 
   const deleteMedia = (id: string) => {
-    const updated = data.media.filter((m) => m.id !== id);
-    broadcastAndSave({
-      ...data,
-      media: updated,
-      lastUpdated: new Date().toISOString(),
+    setData((prev) => {
+      const updated = prev.media.filter((m) => m.id !== id);
+      const nextData: ResortStoreData = {
+        ...prev,
+        media: updated,
+        lastUpdated: new Date().toISOString(),
+      };
+      saveAndBroadcast(nextData);
+      return nextData;
     });
   };
 
   const reorderMedia = (id: string, direction: "up" | "down") => {
-    const index = data.media.findIndex((m) => m.id === id);
-    if (index === -1) return;
-    if (direction === "up" && index === 0) return;
-    if (direction === "down" && index === data.media.length - 1) return;
+    setData((prev) => {
+      const index = prev.media.findIndex((m) => m.id === id);
+      if (index === -1) return prev;
+      if (direction === "up" && index === 0) return prev;
+      if (direction === "down" && index === prev.media.length - 1) return prev;
 
-    const targetIndex = direction === "up" ? index - 1 : index + 1;
-    const mediaCopy = [...data.media];
-    const [moved] = mediaCopy.splice(index, 1);
-    mediaCopy.splice(targetIndex, 0, moved);
+      const targetIndex = direction === "up" ? index - 1 : index + 1;
+      const mediaCopy = [...prev.media];
+      const [moved] = mediaCopy.splice(index, 1);
+      mediaCopy.splice(targetIndex, 0, moved);
 
-    const reordered = mediaCopy.map((m, idx) => ({ ...m, order: idx + 1 }));
-    broadcastAndSave({
-      ...data,
-      media: reordered,
-      lastUpdated: new Date().toISOString(),
+      const reordered = mediaCopy.map((m, idx) => ({ ...m, order: idx + 1 }));
+      const nextData: ResortStoreData = {
+        ...prev,
+        media: reordered,
+        lastUpdated: new Date().toISOString(),
+      };
+      saveAndBroadcast(nextData);
+      return nextData;
     });
   };
 
@@ -979,31 +1103,48 @@ export function ResortStoreProvider({ children }: { children: React.ReactNode })
     const freshData: ResortStoreData = {
       packages: DEFAULT_PACKAGES,
       rooms: DEFAULT_ROOMS,
+      roomCategories: ROOM_CATEGORIES,
       bookings: DEFAULT_BOOKINGS,
       media: DEFAULT_MEDIA,
       lastUpdated: new Date().toISOString(),
     };
-    broadcastAndSave(freshData);
+    saveAndBroadcast(freshData);
+    setData(freshData);
   };
 
   const getAvailabilityForDate = (dateStr: string) => {
-    return calculateAvailabilityForDate(dateStr, data.rooms, data.bookings);
+    return calculateAvailabilityForDate(
+      dateStr,
+      data.rooms,
+      data.bookings,
+      data.roomCategories || ROOM_CATEGORIES
+    );
   };
 
   const getAvailabilityForDateRange = (startDate: string, endDate: string) => {
-    return calculateAvailabilityForDateRange(startDate, endDate, data.rooms, data.bookings);
+    return calculateAvailabilityForDateRange(
+      startDate,
+      endDate,
+      data.rooms,
+      data.bookings,
+      data.roomCategories || ROOM_CATEGORIES
+    );
   };
 
   const contextValue = useMemo(
     () => ({
       packages: data.packages,
       rooms: data.rooms,
+      roomCategories: data.roomCategories || ROOM_CATEGORIES,
       bookings: data.bookings,
       media: data.media,
       isLoaded,
       getAvailabilityForDate,
       getAvailabilityForDateRange,
       updatePackageRate,
+      updateRoomCategory,
+      updateRatesBatch,
+      updateRoom,
       addBooking,
       updateBookingStatus,
       updateBooking,

@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
@@ -17,6 +17,20 @@ import {
 export function AdminSidebar({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
+  const [authChecked, setAuthChecked] = useState(false);
+
+  useEffect(() => {
+    const user = localStorage.getItem("pomelo_admin_user");
+    const hasCookie =
+      typeof document !== "undefined" &&
+      document.cookie.includes("pomelo_admin_session=authenticated");
+
+    if (!user && !hasCookie) {
+      router.replace("/admin/login");
+    } else {
+      setAuthChecked(true);
+    }
+  }, [router]);
 
   const navLinks = [
     {
@@ -39,12 +53,21 @@ export function AdminSidebar({ children }: { children: React.ReactNode }) {
   const handleLogout = async () => {
     try {
       await fetch("/api/admin/logout", { method: "POST" });
-      localStorage.removeItem("pomelo_admin_user");
-      router.push("/admin/login");
     } catch {
-      router.push("/admin/login");
+      // ignore
     }
+    document.cookie = "pomelo_admin_session=; path=/; max-age=0;";
+    localStorage.removeItem("pomelo_admin_user");
+    router.push("/admin/login");
   };
+
+  if (!authChecked) {
+    return (
+      <div className="min-h-screen bg-[#F3F5F4] flex items-center justify-center font-mono text-xs text-gray-400">
+        Checking owner authorization...
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#F3F5F4] flex flex-col font-sans text-[#161D1A]">

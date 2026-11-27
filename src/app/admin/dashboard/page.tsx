@@ -146,13 +146,67 @@ export default function AdminDashboardPage() {
     };
   };
 
-  // KPI Calculations
-  const totalGuestsToday = 24; // 16 Adults, 8 Kids
-  const occupiedCount = rooms.filter((r) => r.currentStatus === "Occupied").length;
-  const occupancyPercentage = Math.round((occupiedCount / rooms.length) * 100);
-  const totalDueToday = bookings
-    .filter((b) => b.balanceDue > 0)
-    .reduce((acc, curr) => acc + curr.balanceDue, 0);
+  // Dynamic live KPI and Kitchen calculations for selectedDate
+  const dayStats = useMemo(() => {
+    const activeBookings = bookings.filter((b) => b.status !== "Cancelled");
+    const dayBookings = activeBookings.filter((b) => {
+      if (b.checkIn === b.checkOut) {
+        return b.checkIn === selectedDate;
+      }
+      return b.checkIn <= selectedDate && selectedDate < b.checkOut;
+    });
+
+    const adults = dayBookings.reduce((sum, b) => sum + (b.adults || 0), 0);
+    const children = dayBookings.reduce((sum, b) => sum + (b.children || 0), 0);
+    const totalGuests = adults + children;
+
+    // Distinct rooms booked on this day
+    const bookedRoomIds = new Set<string>();
+    dayBookings.forEach((b) => {
+      (b.rooms || []).forEach((r) => bookedRoomIds.add(r));
+    });
+    const occupiedCount = bookedRoomIds.size;
+    const occupancyPercentage = rooms.length > 0 ? Math.round((occupiedCount / rooms.length) * 100) : 0;
+
+    // Balance due for bookings on this day
+    const totalDue = dayBookings
+      .filter((b) => b.balanceDue > 0)
+      .reduce((sum, b) => sum + b.balanceDue, 0);
+
+    const unsettledCount = dayBookings.filter((b) => b.balanceDue > 0).length;
+
+    // Kitchen meal counts
+    let vegPax = 0;
+    let nonVegPax = 0;
+    dayBookings.forEach((b) => {
+      const bTotal = (b.adults || 0) + (b.children || 0);
+      if (b.vegCount !== undefined && b.nonVegCount !== undefined && (b.vegCount > 0 || b.nonVegCount > 0)) {
+        vegPax += b.vegCount;
+        nonVegPax += b.nonVegCount;
+      } else if (b.mealPreference === "Veg") {
+        vegPax += bTotal;
+      } else if (b.mealPreference === "Non-Veg") {
+        nonVegPax += bTotal;
+      } else {
+        const half = Math.ceil(bTotal / 2);
+        vegPax += half;
+        nonVegPax += (bTotal - half);
+      }
+    });
+
+    return {
+      dayBookings,
+      totalGuests,
+      adults,
+      children,
+      occupiedCount,
+      occupancyPercentage,
+      totalDue,
+      unsettledCount,
+      vegPax,
+      nonVegPax,
+    };
+  }, [bookings, rooms, selectedDate]);
 
   // Quick Check-in action
   const handleCheckIn = (id: string, name: string) => {
@@ -251,7 +305,7 @@ export default function AdminDashboardPage() {
           <div className="bg-white rounded-2xl p-3.5 sm:p-5 border border-[#E2E7E4] shadow-xs flex flex-col justify-between">
             <div className="flex items-center justify-between mb-1.5">
               <span className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-gray-500 truncate">
-                Today&apos;s Guests
+                {selectedDate === "2026-11-26" ? "Today's Guests" : "Day's Guests"}
               </span>
               <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-[#F4FBF6] flex items-center justify-center text-[#1E6F50] shrink-0">
                 <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
@@ -260,13 +314,15 @@ export default function AdminDashboardPage() {
             <div className="space-y-1">
               <div className="flex items-baseline gap-1 sm:gap-2">
                 <span className="font-mono text-xl sm:text-3xl font-bold text-[#161D1A]">
-                  {totalGuestsToday}
+                  {dayStats.totalGuests}
                 </span>
                 <span className="text-[10px] sm:text-xs uppercase font-mono text-gray-500">Pax</span>
               </div>
               <div className="flex items-center justify-between pt-1.5 border-t border-gray-100 text-[10px] sm:text-[11px] font-mono text-gray-600">
-                <span>16 Adults · 8 Kids</span>
-                <span className="text-[#1E6F50] font-semibold hidden sm:inline">+4 vs yesterday</span>
+                <span>{dayStats.adults} Adults · {dayStats.children} Kids</span>
+                <span className="text-[#1E6F50] font-semibold hidden sm:inline">
+                  {dayStats.dayBookings.length} Bookings
+                </span>
               </div>
             </div>
           </div>
@@ -285,18 +341,18 @@ export default function AdminDashboardPage() {
               <div className="flex items-baseline justify-between">
                 <div className="flex items-baseline gap-1">
                   <span className="font-mono text-xl sm:text-3xl font-bold text-[#161D1A]">
-                    {occupiedCount}
+                    {dayStats.occupiedCount}
                   </span>
                   <span className="font-mono text-[10px] sm:text-xs text-gray-500">/ {rooms.length} Units</span>
                 </div>
                 <span className="px-1.5 py-0.5 rounded bg-[#F4FBF6] text-[#1E6F50] font-mono text-[10px] sm:text-xs font-bold">
-                  {occupancyPercentage}%
+                  {dayStats.occupancyPercentage}%
                 </span>
               </div>
               <div className="w-full bg-gray-100 h-1.5 rounded-full overflow-hidden">
                 <div
                   className="bg-[#1E6F50] h-full rounded-full transition-all duration-500"
-                  style={{ width: `${occupancyPercentage}%` }}
+                  style={{ width: `${dayStats.occupancyPercentage}%` }}
                 ></div>
               </div>
             </div>
@@ -315,11 +371,11 @@ export default function AdminDashboardPage() {
             <div className="space-y-1">
               <div className="flex items-baseline gap-1">
                 <span className="font-mono text-lg sm:text-2xl font-bold text-[#E06354]">
-                  ₹{totalDueToday.toLocaleString("en-IN")}
+                  ₹{dayStats.totalDue.toLocaleString("en-IN")}
                 </span>
               </div>
               <div className="flex items-center justify-between pt-1.5 border-t border-gray-100 text-[10px] sm:text-[11px] font-mono">
-                <span className="text-[#E06354] font-semibold">2 Unsettled</span>
+                <span className="text-[#E06354] font-semibold">{dayStats.unsettledCount} Unsettled</span>
                 <span className="text-gray-500 hidden sm:inline">Desk collection</span>
               </div>
             </div>
@@ -528,11 +584,11 @@ export default function AdminDashboardPage() {
 
               {/* Plate count pill */}
               <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#F4FBF6] border border-[#1E6F50]/20 text-xs font-mono self-start sm:self-auto">
-                <span className="text-[#1E6F50] font-bold">16 Veg</span>
+                <span className="text-[#1E6F50] font-bold">{dayStats.vegPax} Veg</span>
                 <span className="text-gray-300">·</span>
-                <span className="text-[#E06354] font-bold">8 Non-Veg</span>
+                <span className="text-[#E06354] font-bold">{dayStats.nonVegPax} Non-Veg</span>
                 <span className="text-gray-300">·</span>
-                <span className="text-[#161D1A] font-semibold">24 Pax</span>
+                <span className="text-[#161D1A] font-semibold">{dayStats.totalGuests} Pax</span>
               </div>
             </div>
 
@@ -549,7 +605,7 @@ export default function AdminDashboardPage() {
                   </span>
                 </div>
                 <p className="text-xs text-gray-600">
-                  <strong className="text-[#161D1A]">16 Veg:</strong> Konkan Misal Pav, Poha. <strong className="text-[#161D1A]">8 Non-Veg:</strong> Masala Bhurji Pav.
+                  <strong className="text-[#161D1A]">{dayStats.vegPax} Veg:</strong> Konkan Misal Pav, Poha. <strong className="text-[#161D1A]">{dayStats.nonVegPax} Non-Veg:</strong> Masala Bhurji Pav.
                 </p>
               </div>
 
@@ -565,7 +621,7 @@ export default function AdminDashboardPage() {
                   </span>
                 </div>
                 <p className="text-xs text-gray-600">
-                  <strong className="text-[#161D1A]">16 Non-Veg:</strong> Fresh Surmai Fry & Agri Chicken Thali. <strong className="text-[#161D1A]">8 Veg:</strong> Pithla Bhakri, Dal Tadka.
+                  <strong className="text-[#161D1A]">{dayStats.nonVegPax} Non-Veg:</strong> Fresh Surmai Fry & Agri Chicken Thali. <strong className="text-[#161D1A]">{dayStats.vegPax} Veg:</strong> Pithla Bhakri, Dal Tadka.
                 </p>
               </div>
 
@@ -578,7 +634,7 @@ export default function AdminDashboardPage() {
                   </span>
                 </div>
                 <p className="text-xs text-gray-600">
-                  Lemongrass Kulhad Chai with freshly steamed hot Ukadiche Modak (24 Pax).
+                  Lemongrass Kulhad Chai with freshly steamed hot Ukadiche Modak ({dayStats.totalGuests} Pax).
                 </p>
               </div>
 

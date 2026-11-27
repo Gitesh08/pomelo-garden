@@ -19,13 +19,16 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
-import { useResortStore, PackageItem, MediaItem } from "@/lib/resort-store";
+import { useResortStore, PackageItem, RoomCategory, MediaItem } from "@/lib/resort-store";
 
 export default function RoomRatesAndMediaPage() {
   const {
     packages,
+    roomCategories,
     media,
     updatePackageRate,
+    updateRoomCategory,
+    updateRatesBatch,
     addMedia,
     updateMedia,
     deleteMedia,
@@ -37,6 +40,9 @@ export default function RoomRatesAndMediaPage() {
 
   // Local state for editable package rates before publishing
   const [editingRates, setEditingRates] = useState<{ [id: string]: Partial<PackageItem> }>({});
+
+  // Local state for editable room category rates
+  const [editingRoomRates, setEditingRoomRates] = useState<{ [id: string]: Partial<RoomCategory> }>({});
 
   // Upload modal state
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
@@ -70,15 +76,30 @@ export default function RoomRatesAndMediaPage() {
     handleRateChange(pkgId, field, newVal);
   };
 
-  // Pending unsaved edits count
-  const pendingEditsCount = Object.keys(editingRates).length;
+  // Handle room category rate change
+  const handleRoomRateChange = (catId: string, field: keyof RoomCategory, value: RoomCategory[keyof RoomCategory]) => {
+    setEditingRoomRates((prev) => ({
+      ...prev,
+      [catId]: {
+        ...prev[catId],
+        [field]: value,
+      },
+    }));
+  };
+
+  const stepRoomRate = (catId: string, currentVal: number, delta: number) => {
+    const newVal = Math.max(0, currentVal + delta);
+    handleRoomRateChange(catId, "basePrice", newVal);
+  };
+
+  // Pending unsaved edits count (both packages and cottages)
+  const pendingEditsCount = Object.keys(editingRates).length + Object.keys(editingRoomRates).length;
 
   // Publish all rate edits live
   const handlePublishRates = () => {
-    Object.entries(editingRates).forEach(([pkgId, updates]) => {
-      updatePackageRate(pkgId, updates);
-    });
+    updateRatesBatch(editingRates, editingRoomRates);
     setEditingRates({});
+    setEditingRoomRates({});
     showToast("✓ All price changes published live! Consumer website updated in realtime.");
   };
 
@@ -196,7 +217,121 @@ export default function RoomRatesAndMediaPage() {
         )}
 
         {/* =========================================================================
-            SECTION 1: LIVE TARIFF & PACKAGE CONTROLLER
+            SECTION 1: COTTAGE & SUITE NIGHTLY TARIFFS
+           ========================================================================= */}
+        <section className="space-y-4">
+          <div className="bg-white p-4 sm:p-5 rounded-2xl border border-[#E2E7E4] shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <div className="flex items-center gap-2">
+                <DollarSign className="w-4 h-4 text-[#1E6F50]" />
+                <h2 className="text-base font-bold text-[#161D1A]">
+                  Cottage & Suite Nightly Tariffs
+                </h2>
+              </div>
+              <p className="text-xs text-gray-500 mt-0.5">
+                Nightly room rates displayed on guest portal and live booking showcase. Adjust and tap Publish to sync immediately.
+              </p>
+            </div>
+            <span className="px-3 py-1 rounded-lg bg-[#F4FBF6] text-[#1E6F50] font-mono text-xs font-bold border border-[#1E6F50]/20 self-start sm:self-auto">
+              3 Cottages Active
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+            {roomCategories.map((cat) => {
+              const localUpdates = editingRoomRates[cat.id] || {};
+              const currentPrice =
+                localUpdates.basePrice !== undefined ? localUpdates.basePrice : cat.basePrice;
+              const hasUnsavedEdit = localUpdates.basePrice !== undefined;
+
+              return (
+                <div
+                  key={cat.id}
+                  className="bg-white rounded-2xl p-4 sm:p-5 border border-[#E2E7E4] shadow-xs flex flex-col justify-between space-y-4 hover:border-[#1E6F50] transition-colors"
+                >
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#1E6F50] bg-[#F4FBF6] px-2 py-0.5 rounded border border-[#1E6F50]/20">
+                        {cat.type}
+                      </span>
+                      <span className="text-[10px] font-mono text-gray-500">
+                        {cat.roomCount} {cat.roomCount === 1 ? "Unit" : "Units"}
+                      </span>
+                    </div>
+
+                    <div>
+                      <h3 className="font-bold text-sm sm:text-base text-[#161D1A]">{cat.name}</h3>
+                      <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">
+                        {cat.tagline}
+                      </p>
+                    </div>
+
+                    <div className="pt-2 border-t border-gray-100 space-y-2">
+                      <label className="font-semibold text-gray-600 block text-xs">
+                        Base Nightly Rate (₹/night)
+                      </label>
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => stepRoomRate(cat.id, currentPrice, -100)}
+                          className="w-8 h-8 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold flex items-center justify-center shrink-0 active:scale-95 transition-transform"
+                        >
+                          -
+                        </button>
+                        <div className="relative flex-1">
+                          <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 font-mono text-xs">₹</span>
+                          <input
+                            type="number"
+                            value={currentPrice}
+                            onChange={(e) =>
+                              handleRoomRateChange(cat.id, "basePrice", Number(e.target.value))
+                            }
+                            className="w-full h-8 pl-6 pr-2 bg-[#F3F5F4] rounded-lg border border-transparent font-mono text-xs font-bold text-[#161D1A] focus:bg-white focus:border-[#1E6F50] focus:outline-none"
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => stepRoomRate(cat.id, currentPrice, 100)}
+                          className="w-8 h-8 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold flex items-center justify-center shrink-0 active:scale-95 transition-transform"
+                        >
+                          +
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="pt-3 border-t border-gray-100 flex items-center justify-between">
+                    <span className="font-mono text-[10px] text-gray-400">
+                      {hasUnsavedEdit ? "Unsaved Edit" : "Live on Website"}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (hasUnsavedEdit) {
+                          updateRoomCategory(cat.id, localUpdates);
+                          setEditingRoomRates((prev) => {
+                            const next = { ...prev };
+                            delete next[cat.id];
+                            return next;
+                          });
+                          showToast(`✓ Updated ${cat.name} rate to ₹${currentPrice.toLocaleString("en-IN")}`);
+                        } else {
+                          showToast(`Rate for ${cat.name} is already live.`);
+                        }
+                      }}
+                      className="px-3 py-1.5 bg-[#1E6F50] text-white rounded-lg font-mono text-xs font-semibold hover:bg-[#185e43] transition-colors"
+                    >
+                      Publish
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+
+        {/* =========================================================================
+            SECTION 2: LIVE TARIFF & PACKAGE CONTROLLER
            ========================================================================= */}
         <section className="space-y-4">
           <div className="bg-white p-4 sm:p-5 rounded-2xl border border-[#E2E7E4] shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -208,7 +343,7 @@ export default function RoomRatesAndMediaPage() {
                 </h2>
               </div>
               <p className="text-xs text-gray-500 mt-0.5">
-                Adjust rates using touch steppers or direct input. Tap &ldquo;Publish Live Rates&rdquo; to sync with guest portal.
+                Adjust retreat packages using steppers or direct input. Tap &ldquo;Publish Live Rates&rdquo; to sync with guest portal.
               </p>
             </div>
             <span className="px-3 py-1 rounded-lg bg-[#F4FBF6] text-[#1E6F50] font-mono text-xs font-bold border border-[#1E6F50]/20 self-start sm:self-auto">
@@ -331,41 +466,66 @@ export default function RoomRatesAndMediaPage() {
                         <>
                           <div className="space-y-1">
                             <label className="font-semibold text-gray-600 block">
-                              Tier 1: 4-5 Pax (₹/pax)
+                              AC Rate per Pax (₹)
                             </label>
-                            <div className="relative">
-                              <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 font-mono text-xs">₹</span>
-                              <input
-                                type="number"
-                                defaultValue={2300}
-                                className="w-full h-8 pl-6 pr-2 bg-[#F3F5F4] rounded-lg border border-transparent font-mono text-xs font-bold text-[#161D1A] focus:bg-white focus:border-[#1E6F50] focus:outline-none"
-                              />
+                            <div className="flex items-center gap-1.5">
+                              <button
+                                type="button"
+                                onClick={() => stepRate(pkg.id, "acPrice", currentAc, -50)}
+                                className="w-8 h-8 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold flex items-center justify-center shrink-0 active:scale-95 transition-transform"
+                              >
+                                -
+                              </button>
+                              <div className="relative flex-1">
+                                <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 font-mono text-xs">₹</span>
+                                <input
+                                  type="number"
+                                  value={currentAc}
+                                  onChange={(e) =>
+                                    handleRateChange(pkg.id, "acPrice", Number(e.target.value))
+                                  }
+                                  className="w-full h-8 pl-6 pr-2 bg-[#F3F5F4] rounded-lg border border-transparent font-mono text-xs font-bold text-[#161D1A] focus:bg-white focus:border-[#1E6F50] focus:outline-none"
+                                />
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => stepRate(pkg.id, "acPrice", currentAc, 50)}
+                                className="w-8 h-8 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold flex items-center justify-center shrink-0 active:scale-95 transition-transform"
+                              >
+                                +
+                              </button>
                             </div>
                           </div>
                           <div className="space-y-1">
                             <label className="font-semibold text-gray-600 block">
-                              Tier 2: 6-7 Pax (₹/pax)
+                              Non-AC Rate per Pax (₹)
                             </label>
-                            <div className="relative">
-                              <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 font-mono text-xs">₹</span>
-                              <input
-                                type="number"
-                                defaultValue={2100}
-                                className="w-full h-8 pl-6 pr-2 bg-[#F3F5F4] rounded-lg border border-transparent font-mono text-xs font-bold text-[#161D1A] focus:bg-white focus:border-[#1E6F50] focus:outline-none"
-                              />
-                            </div>
-                          </div>
-                          <div className="space-y-1">
-                            <label className="font-semibold text-gray-600 block">
-                              Tier 3: 8+ Pax (₹/pax)
-                            </label>
-                            <div className="relative">
-                              <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 font-mono text-xs">₹</span>
-                              <input
-                                type="number"
-                                defaultValue={2000}
-                                className="w-full h-8 pl-6 pr-2 bg-[#F3F5F4] rounded-lg border border-transparent font-mono text-xs font-bold text-[#161D1A] focus:bg-white focus:border-[#1E6F50] focus:outline-none"
-                              />
+                            <div className="flex items-center gap-1.5">
+                              <button
+                                type="button"
+                                onClick={() => stepRate(pkg.id, "nonAcPrice", currentNonAc, -50)}
+                                className="w-8 h-8 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold flex items-center justify-center shrink-0 active:scale-95 transition-transform"
+                              >
+                                -
+                              </button>
+                              <div className="relative flex-1">
+                                <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 font-mono text-xs">₹</span>
+                                <input
+                                  type="number"
+                                  value={currentNonAc}
+                                  onChange={(e) =>
+                                    handleRateChange(pkg.id, "nonAcPrice", Number(e.target.value))
+                                  }
+                                  className="w-full h-8 pl-6 pr-2 bg-[#F3F5F4] rounded-lg border border-transparent font-mono text-xs font-bold text-[#161D1A] focus:bg-white focus:border-[#1E6F50] focus:outline-none"
+                                />
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => stepRate(pkg.id, "nonAcPrice", currentNonAc, 50)}
+                                className="w-8 h-8 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold flex items-center justify-center shrink-0 active:scale-95 transition-transform"
+                              >
+                                +
+                              </button>
                             </div>
                           </div>
                         </>
@@ -407,14 +567,41 @@ export default function RoomRatesAndMediaPage() {
                             <label className="font-semibold text-gray-600 block">
                               Extra Guest Rate (₹)
                             </label>
-                            <div className="relative">
-                              <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 font-mono text-xs">₹</span>
-                              <input
-                                type="number"
-                                defaultValue={1000}
-                                className="w-full h-8 pl-6 pr-2 bg-[#F3F5F4] rounded-lg border border-transparent font-mono text-xs font-bold text-[#161D1A] focus:bg-white focus:border-[#1E6F50] focus:outline-none"
-                              />
-                            </div>
+                            {(() => {
+                              const currentExtra =
+                                localUpdates.extraGuestPrice !== undefined
+                                  ? localUpdates.extraGuestPrice
+                                  : pkg.extraGuestPrice || 1000;
+                              return (
+                                <div className="flex items-center gap-1.5">
+                                  <button
+                                    type="button"
+                                    onClick={() => stepRate(pkg.id, "extraGuestPrice", currentExtra, -50)}
+                                    className="w-8 h-8 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold flex items-center justify-center shrink-0 active:scale-95 transition-transform"
+                                  >
+                                    -
+                                  </button>
+                                  <div className="relative flex-1">
+                                    <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 font-mono text-xs">₹</span>
+                                    <input
+                                      type="number"
+                                      value={currentExtra}
+                                      onChange={(e) =>
+                                        handleRateChange(pkg.id, "extraGuestPrice", Number(e.target.value))
+                                      }
+                                      className="w-full h-8 pl-6 pr-2 bg-[#F3F5F4] rounded-lg border border-transparent font-mono text-xs font-bold text-[#161D1A] focus:bg-white focus:border-[#1E6F50] focus:outline-none"
+                                    />
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={() => stepRate(pkg.id, "extraGuestPrice", currentExtra, 50)}
+                                    className="w-8 h-8 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold flex items-center justify-center shrink-0 active:scale-95 transition-transform"
+                                  >
+                                    +
+                                  </button>
+                                </div>
+                              );
+                            })()}
                           </div>
                         </>
                       ) : (
@@ -423,26 +610,64 @@ export default function RoomRatesAndMediaPage() {
                             <label className="font-semibold text-gray-600 block">
                               Base Buyout Rate 20p (₹)
                             </label>
-                            <div className="relative">
-                              <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 font-mono text-xs">₹</span>
-                              <input
-                                type="number"
-                                defaultValue={45000}
-                                className="w-full h-8 pl-6 pr-2 bg-[#F3F5F4] rounded-lg border border-transparent font-mono text-xs font-bold text-[#161D1A] focus:bg-white focus:border-[#1E6F50] focus:outline-none"
-                              />
+                            <div className="flex items-center gap-1.5">
+                              <button
+                                type="button"
+                                onClick={() => stepRate(pkg.id, "acPrice", currentAc, -500)}
+                                className="w-8 h-8 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold flex items-center justify-center shrink-0 active:scale-95 transition-transform"
+                              >
+                                -
+                              </button>
+                              <div className="relative flex-1">
+                                <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 font-mono text-xs">₹</span>
+                                <input
+                                  type="number"
+                                  value={currentAc}
+                                  onChange={(e) =>
+                                    handleRateChange(pkg.id, "acPrice", Number(e.target.value))
+                                  }
+                                  className="w-full h-8 pl-6 pr-2 bg-[#F3F5F4] rounded-lg border border-transparent font-mono text-xs font-bold text-[#161D1A] focus:bg-white focus:border-[#1E6F50] focus:outline-none"
+                                />
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => stepRate(pkg.id, "acPrice", currentAc, 500)}
+                                className="w-8 h-8 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold flex items-center justify-center shrink-0 active:scale-95 transition-transform"
+                              >
+                                +
+                              </button>
                             </div>
                           </div>
                           <div className="space-y-1">
                             <label className="font-semibold text-gray-600 block">
                               Additional Pax Rate (₹)
                             </label>
-                            <div className="relative">
-                              <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 font-mono text-xs">₹</span>
-                              <input
-                                type="number"
-                                defaultValue={1800}
-                                className="w-full h-8 pl-6 pr-2 bg-[#F3F5F4] rounded-lg border border-transparent font-mono text-xs font-bold text-[#161D1A] focus:bg-white focus:border-[#1E6F50] focus:outline-none"
-                              />
+                            <div className="flex items-center gap-1.5">
+                              <button
+                                type="button"
+                                onClick={() => stepRate(pkg.id, "nonAcPrice", currentNonAc, -50)}
+                                className="w-8 h-8 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold flex items-center justify-center shrink-0 active:scale-95 transition-transform"
+                              >
+                                -
+                              </button>
+                              <div className="relative flex-1">
+                                <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 font-mono text-xs">₹</span>
+                                <input
+                                  type="number"
+                                  value={currentNonAc}
+                                  onChange={(e) =>
+                                    handleRateChange(pkg.id, "nonAcPrice", Number(e.target.value))
+                                  }
+                                  className="w-full h-8 pl-6 pr-2 bg-[#F3F5F4] rounded-lg border border-transparent font-mono text-xs font-bold text-[#161D1A] focus:bg-white focus:border-[#1E6F50] focus:outline-none"
+                                />
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => stepRate(pkg.id, "nonAcPrice", currentNonAc, 50)}
+                                className="w-8 h-8 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold flex items-center justify-center shrink-0 active:scale-95 transition-transform"
+                              >
+                                +
+                              </button>
                             </div>
                           </div>
                         </>
@@ -498,7 +723,7 @@ export default function RoomRatesAndMediaPage() {
         </section>
 
         {/* =========================================================================
-            SECTION 2: REALTIME WEBSITE GALLERY MANAGER
+            SECTION 3: REALTIME WEBSITE GALLERY MANAGER
            ========================================================================= */}
         <section className="space-y-4">
           <div className="bg-white p-4 sm:p-5 rounded-2xl border border-[#E2E7E4] shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">

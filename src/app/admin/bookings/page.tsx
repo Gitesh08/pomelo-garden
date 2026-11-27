@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useState, useMemo } from "react";
 import Link from "next/link";
@@ -165,7 +165,7 @@ export default function BookingsAndIdVaultPage() {
       idType: collectIdType,
       idLast4: collectIdLast4 || "4892",
     });
-    showToast(`✓ ID recorded for ${collectIdBooking.guestName}!`);
+    showToast(`âœ“ ID recorded for ${collectIdBooking.guestName}!`);
     setCollectIdBooking(null);
   };
 
@@ -211,7 +211,7 @@ export default function BookingsAndIdVaultPage() {
     setCustomTotal(null);
     setCollectIdNow(false);
     setIdLast4("");
-    showToast(`✓ Booking ${newBooking.id} created for ${newBooking.guestName}!`);
+    showToast(`âœ“ Booking ${newBooking.id} created for ${newBooking.guestName}!`);
   };
 
   // Open Safe Edit Drawer
@@ -294,7 +294,7 @@ export default function BookingsAndIdVaultPage() {
       notes: editNotes.trim(),
     });
 
-    showToast(`✓ Reservation ${editingBooking.id} updated safely!`);
+    showToast(`âœ“ Reservation ${editingBooking.id} updated safely!`);
     setEditingBooking(null);
   };
 
@@ -660,7 +660,7 @@ export default function BookingsAndIdVaultPage() {
                   <div className="p-3.5 bg-gray-50 rounded-xl space-y-3 border border-gray-200">
                     <div className="grid grid-cols-2 gap-3">
                       <div className="space-y-1">
-                        <label className="font-semibold text-gray-600">Total Tariff (₹)</label>
+                        <label className="font-semibold text-gray-600">Total Tariff (â‚¹)</label>
                         <input
                           type="number"
                           value={editTotalAmount}
@@ -669,7 +669,7 @@ export default function BookingsAndIdVaultPage() {
                         />
                       </div>
                       <div className="space-y-1">
-                        <label className="font-semibold text-gray-600">Advance Received (₹)</label>
+                        <label className="font-semibold text-gray-600">Advance Received (â‚¹)</label>
                         <input
                           type="number"
                           value={editAdvancePaid}
@@ -682,7 +682,7 @@ export default function BookingsAndIdVaultPage() {
                     <div className="pt-2 border-t border-gray-200 flex items-center justify-between text-xs">
                       <span className="font-bold text-gray-700">Calculated Balance Due:</span>
                       <span className={`font-mono font-bold text-sm ${editTotalAmount - editAdvancePaid > 0 ? "text-[#E06354]" : "text-[#1E6F50]"}`}>
-                        ₹{Math.max(0, editTotalAmount - editAdvancePaid).toLocaleString("en-IN")}
+                        â‚¹{Math.max(0, editTotalAmount - editAdvancePaid).toLocaleString("en-IN")}
                       </span>
                     </div>
                   </div>
@@ -727,7 +727,7 @@ export default function BookingsAndIdVaultPage() {
           <div>
             <div className="flex items-center gap-2 text-[11px] font-mono uppercase tracking-wider text-gray-500 mb-1">
               <span>Saphale Orchard Campus</span>
-              <span>›</span>
+              <span>â€º</span>
               <span className="text-[#1E6F50] font-semibold">Bookings & Guest ID Vault</span>
             </div>
             <div className="flex items-center gap-3">
@@ -958,7 +958,7 @@ export default function BookingsAndIdVaultPage() {
                     </h3>
                     <div className="text-xs text-gray-500 mt-0.5 flex items-center gap-1.5">
                       <span>{b.city}</span>
-                      <span>•</span>
+                      <span>â€¢</span>
                       <span className="font-mono text-[11px]">{b.phone}</span>
                     </div>
                   </div>
@@ -1000,7 +1000,7 @@ export default function BookingsAndIdVaultPage() {
                     </span>
                     <span className="text-[#1E6F50] uppercase font-bold text-[10px]">
                       {b.mealPreference === "Mixed"
-                        ? `Mixed (${b.vegCount || 0} Veg · ${b.nonVegCount || 0} Non-Veg)`
+                        ? `Mixed (${b.vegCount || 0} Veg Â· ${b.nonVegCount || 0} Non-Veg)`
                         : b.mealPreference === "Veg"
                         ? `All Veg (${b.adults + b.children} Pax)`
                         : `All Non-Veg (${b.adults + b.children} Pax)`}
@@ -1025,20 +1025,20 @@ export default function BookingsAndIdVaultPage() {
                   <div className="space-y-0.5">
                     <span className="text-[10px] text-gray-500 block uppercase">Total</span>
                     <span className="text-xs font-bold text-[#161D1A]">
-                      ₹{b.totalAmount.toLocaleString("en-IN")}
+                      â‚¹{b.totalAmount.toLocaleString("en-IN")}
                     </span>
                   </div>
                   <div className="space-y-0.5 border-x border-gray-200">
                     <span className="text-[10px] text-gray-500 block uppercase">Adv ({b.paymentMode})</span>
                     <span className="text-xs font-semibold text-gray-700">
-                      ₹{b.advancePaid.toLocaleString("en-IN")}
+                      â‚¹{b.advancePaid.toLocaleString("en-IN")}
                     </span>
                   </div>
                   <div className="space-y-0.5">
                     <span className="text-[10px] text-gray-500 block uppercase">Balance</span>
                     {b.balanceDue > 0 ? (
                       <span className="text-xs font-bold text-[#E06354]">
-                        ₹{b.balanceDue.toLocaleString("en-IN")}
+                        â‚¹{b.balanceDue.toLocaleString("en-IN")}
                       </span>
                     ) : (
                       <span className="text-xs font-bold text-[#1E6F50]">
@@ -1094,7 +1094,7 @@ export default function BookingsAndIdVaultPage() {
                         type="button"
                         onClick={() => {
                           updateBookingStatus(b.id, "Checked-In");
-                          showToast(`✓ Folio ${b.id} marked as Checked-In!`);
+                          showToast(`âœ“ Folio ${b.id} marked as Checked-In!`);
                         }}
                         className="px-3 py-1.5 bg-[#1E6F50] hover:bg-[#185e43] text-white rounded-lg font-mono text-xs font-bold flex items-center gap-1 cursor-pointer"
                       >
@@ -1108,7 +1108,7 @@ export default function BookingsAndIdVaultPage() {
                         type="button"
                         onClick={() => {
                           updateBookingStatus(b.id, "Completed");
-                          showToast(`✓ Folio ${b.id} marked as Completed & Checked-Out!`);
+                          showToast(`âœ“ Folio ${b.id} marked as Completed & Checked-Out!`);
                         }}
                         className="px-3 py-1.5 bg-gray-800 text-white rounded-lg font-mono text-xs font-bold cursor-pointer"
                       >
@@ -1121,7 +1121,7 @@ export default function BookingsAndIdVaultPage() {
                         type="button"
                         onClick={() => {
                           updateBookingStatus(b.id, "Confirmed");
-                          showToast(`✓ Folio ${b.id} confirmed with advance!`);
+                          showToast(`âœ“ Folio ${b.id} confirmed with advance!`);
                         }}
                         className="px-3 py-1.5 bg-[#1E6F50] text-white rounded-lg font-mono text-xs font-bold cursor-pointer"
                       >
@@ -1190,7 +1190,7 @@ export default function BookingsAndIdVaultPage() {
                         </div>
                         <div className="text-[10px] font-mono text-[#1E6F50] uppercase mt-0.5 font-semibold">
                           {b.mealPreference === "Mixed"
-                            ? `Mixed: ${b.vegCount || 0} Veg · ${b.nonVegCount || 0} Non-Veg`
+                            ? `Mixed: ${b.vegCount || 0} Veg Â· ${b.nonVegCount || 0} Non-Veg`
                             : `${b.mealPreference} Preference`}
                         </div>
                       </td>
@@ -1221,7 +1221,7 @@ export default function BookingsAndIdVaultPage() {
                             >
                               <CheckCircle2 className="w-3.5 h-3.5 text-[#1E6F50]" />
                               <span>
-                                {b.idType} •••• {b.idLast4}
+                                {b.idType} â€¢â€¢â€¢â€¢ {b.idLast4}
                               </span>
                               <Eye className="w-3 h-3" />
                             </button>
@@ -1253,14 +1253,14 @@ export default function BookingsAndIdVaultPage() {
                       {/* Payment Ledger */}
                       <td className="px-5 py-3.5 align-top text-right">
                         <div className="font-mono font-bold text-sm text-[#161D1A]">
-                          ₹{b.totalAmount.toLocaleString("en-IN")}
+                          â‚¹{b.totalAmount.toLocaleString("en-IN")}
                         </div>
                         <div className="font-mono text-[11px] text-gray-500">
-                          Adv: ₹{b.advancePaid.toLocaleString("en-IN")} ({b.paymentMode})
+                          Adv: â‚¹{b.advancePaid.toLocaleString("en-IN")} ({b.paymentMode})
                         </div>
                         {b.balanceDue > 0 ? (
                           <span className="font-mono text-[10px] font-bold px-1.5 py-0.5 rounded bg-[#E06354]/10 text-[#E06354] inline-block mt-0.5">
-                            ₹{b.balanceDue.toLocaleString("en-IN")} Due
+                            â‚¹{b.balanceDue.toLocaleString("en-IN")} Due
                           </span>
                         ) : (
                           <span className="font-mono text-[10px] font-bold px-1.5 py-0.5 rounded bg-[#1E6F50]/10 text-[#1E6F50] inline-block mt-0.5">
@@ -1636,7 +1636,7 @@ export default function BookingsAndIdVaultPage() {
                   <div className="p-3.5 bg-gray-50 rounded-xl space-y-3 border border-gray-200">
                     <div className="grid grid-cols-2 gap-3">
                       <div className="space-y-1">
-                        <label className="font-semibold text-gray-600">Total Tariff (₹)</label>
+                        <label className="font-semibold text-gray-600">Total Tariff (â‚¹)</label>
                         <input
                           type="number"
                           value={finalTotal}
@@ -1645,7 +1645,7 @@ export default function BookingsAndIdVaultPage() {
                         />
                       </div>
                       <div className="space-y-1">
-                        <label className="font-semibold text-gray-600">Advance Received (₹)</label>
+                        <label className="font-semibold text-gray-600">Advance Received (â‚¹)</label>
                         <input
                           type="number"
                           value={advancePaid}
@@ -1673,7 +1673,7 @@ export default function BookingsAndIdVaultPage() {
                       <div className="font-mono text-right">
                         <span className="text-[10px] text-gray-500 block uppercase">Remaining Due</span>
                         <span className={`text-sm font-bold ${balanceDue > 0 ? "text-[#E06354]" : "text-[#1E6F50]"}`}>
-                          ₹{balanceDue.toLocaleString("en-IN")}
+                          â‚¹{balanceDue.toLocaleString("en-IN")}
                         </span>
                       </div>
                     </div>
@@ -1761,1394 +1761,6 @@ export default function BookingsAndIdVaultPage() {
                   >
                     <CheckCircle2 className="w-4 h-4 text-[#89D6B1]" />
                     <span>Save Reservation</span>
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        )}
-
-
-
-        {/* =========================================================================
-            SLIDE-OVER DRAWER: SAFE RESERVATION EDITOR (editingBooking)
-           ========================================================================= */}
-        {editingBooking && (
-          <div className="fixed inset-0 z-50 flex justify-end">
-            {/* Backdrop */}
-            <div
-              className="fixed inset-0 bg-black/50 backdrop-blur-xs transition-opacity"
-              onClick={() => setEditingBooking(null)}
-            ></div>
-
-            {/* Drawer Body */}
-            <div className="relative w-full max-w-xl bg-white h-full shadow-2xl z-10 flex flex-col justify-between overflow-hidden animate-in slide-in-from-right duration-300">
-              {/* Drawer Header */}
-              <div className="p-5 sm:p-6 bg-[#101814] text-white flex items-center justify-between border-b border-white/10">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono text-[11px] text-[#89D6B1] uppercase tracking-wider block">
-                      Folio Editor
-                    </span>
-                    <span className="px-2 py-0.2 rounded bg-white/10 text-white font-mono text-[10px]">
-                      {editingBooking.id}
-                    </span>
-                  </div>
-                  <h2 className="font-serif text-xl sm:text-2xl font-bold text-white mt-0.5">
-                    Update Reservation
-                  </h2>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setEditingBooking(null)}
-                  className="p-2 text-white/70 hover:text-white hover:bg-white/10 rounded-lg transition-colors cursor-pointer"
-                  title="Close without saving"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              {/* Form Content - Clean, Structured & Safe */}
-              <form onSubmit={handleSaveEdit} className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-5 text-xs text-[#161D1A]">
-                {/* Safe Banner */}
-                <div className="p-3 rounded-xl bg-[#F4FBF6] border border-[#1E6F50]/20 flex items-center gap-2.5 text-xs text-[#1E6F50]">
-                  <CheckCircle2 className="w-4 h-4 shrink-0 text-[#1E6F50]" />
-                  <span>
-                    Editing live record for <strong>{editingBooking.guestName}</strong>. All updates are logged safely.
-                  </span>
-                </div>
-
-                {/* 1. Guest Information */}
-                <div className="space-y-3">
-                  <h3 className="font-bold uppercase tracking-wider text-gray-700 text-[11px]">
-                    Guest Details
-                  </h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div className="sm:col-span-2 space-y-1">
-                      <label className="font-semibold text-gray-600">Full Name *</label>
-                      <input
-                        type="text"
-                        required
-                        value={editGuestName}
-                        onChange={(e) => setEditGuestName(e.target.value)}
-                        className="w-full h-10 px-3 rounded-xl border border-[#E2E7E4] focus:border-[#1E6F50] focus:outline-none"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="font-semibold text-gray-600">WhatsApp Mobile *</label>
-                      <input
-                        type="tel"
-                        required
-                        value={editPhone}
-                        onChange={(e) => setEditPhone(e.target.value)}
-                        className="w-full h-10 px-3 rounded-xl border border-[#E2E7E4] font-mono focus:border-[#1E6F50] focus:outline-none"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="font-semibold text-gray-600">City / Origin</label>
-                      <input
-                        type="text"
-                        value={editCity}
-                        onChange={(e) => setEditCity(e.target.value)}
-                        className="w-full h-10 px-3 rounded-xl border border-[#E2E7E4] focus:border-[#1E6F50] focus:outline-none"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* 2. Stay Dates & Package */}
-                <div className="space-y-3 pt-3 border-t border-gray-100">
-                  <h3 className="font-bold uppercase tracking-wider text-gray-700 text-[11px]">
-                    Stay Dates & Package
-                  </h3>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1">
-                      <label className="font-semibold text-gray-600">Check-In Date *</label>
-                      <input
-                        type="date"
-                        required
-                        value={editCheckIn}
-                        onChange={(e) => setEditCheckIn(e.target.value)}
-                        className="w-full h-10 px-3 rounded-xl border border-[#E2E7E4] font-mono focus:border-[#1E6F50]"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="font-semibold text-gray-600">Check-Out Date *</label>
-                      <input
-                        type="date"
-                        required
-                        value={editCheckOut}
-                        onChange={(e) => setEditCheckOut(e.target.value)}
-                        className="w-full h-10 px-3 rounded-xl border border-[#E2E7E4] font-mono focus:border-[#1E6F50]"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="font-semibold text-gray-600">Package Experience</label>
-                    <select
-                      value={editPackageId}
-                      onChange={(e) => setEditPackageId(e.target.value)}
-                      className="w-full h-10 px-3 rounded-xl border border-[#E2E7E4] bg-white font-medium focus:border-[#1E6F50]"
-                    >
-                      {packages.map((pkg) => (
-                        <option key={pkg.id} value={pkg.id}>
-                          {pkg.name} ({pkg.time})
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                {/* 3. Headcount Steppers */}
-                <div className="space-y-3 pt-3 border-t border-gray-100">
-                  <h3 className="font-bold uppercase tracking-wider text-gray-700 text-[11px]">
-                    Guest Headcount
-                  </h3>
-                  <div className="grid grid-cols-2 gap-3">
-                    {/* Adults Stepper */}
-                    <div className="p-3 bg-gray-50 rounded-xl border border-gray-200 flex items-center justify-between">
-                      <div>
-                        <span className="font-semibold block text-gray-700">Adults</span>
-                        <span className="text-[10px] text-gray-500">Age 12+</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={() => setEditAdults(Math.max(1, editAdults - 1))}
-                          className="w-7 h-7 rounded-lg border border-gray-300 flex items-center justify-center font-bold hover:bg-gray-200 cursor-pointer"
-                        >
-                          -
-                        </button>
-                        <span className="w-5 text-center font-mono font-bold">{editAdults}</span>
-                        <button
-                          type="button"
-                          onClick={() => setEditAdults(editAdults + 1)}
-                          className="w-7 h-7 rounded-lg border border-gray-300 flex items-center justify-center font-bold hover:bg-gray-200 cursor-pointer"
-                        >
-                          +
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Children Stepper */}
-                    <div className="p-3 bg-gray-50 rounded-xl border border-gray-200 flex items-center justify-between">
-                      <div>
-                        <span className="font-semibold block text-gray-700">Children</span>
-                        <span className="text-[10px] text-gray-500">Age 5 to 11</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={() => setEditChildren(Math.max(0, editChildren - 1))}
-                          className="w-7 h-7 rounded-lg border border-gray-300 flex items-center justify-center font-bold hover:bg-gray-200 cursor-pointer"
-                        >
-                          -
-                        </button>
-                        <span className="w-5 text-center font-mono font-bold">{editChildren}</span>
-                        <button
-                          type="button"
-                          onClick={() => setEditChildren(editChildren + 1)}
-                          className="w-7 h-7 rounded-lg border border-gray-300 flex items-center justify-center font-bold hover:bg-gray-200 cursor-pointer"
-                        >
-                          +
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* 4. Meal Preference with Exact Breakdown */}
-                <div className="space-y-3 pt-3 border-t border-gray-100">
-                  <h3 className="font-bold uppercase tracking-wider text-gray-700 text-[11px]">
-                    Kitchen Food Preference
-                  </h3>
-
-                  <div className="grid grid-cols-3 gap-2">
-                    {(["Non-Veg", "Veg", "Mixed"] as const).map((pref) => (
-                      <button
-                        key={pref}
-                        type="button"
-                        onClick={() => {
-                          setEditMealPreference(pref);
-                          if (pref === "Mixed" && editVegCount === 0 && editNonVegCount === 0) {
-                            setEditVegCount(Math.ceil((editAdults + editChildren) / 2));
-                            setEditNonVegCount(Math.floor((editAdults + editChildren) / 2));
-                          }
-                        }}
-                        className={`py-2 rounded-xl border text-xs font-semibold cursor-pointer transition-colors ${
-                          editMealPreference === pref
-                            ? "bg-[#1E6F50] text-white border-[#1E6F50] shadow-xs"
-                            : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
-                        }`}
-                      >
-                        {pref}
-                      </button>
-                    ))}
-                  </div>
-
-                  {editMealPreference === "Mixed" && (
-                    <div className="p-3 bg-amber-50/60 rounded-xl border border-amber-200/80 space-y-2 animate-in fade-in">
-                      <div className="flex items-center justify-between text-xs text-amber-900 font-semibold">
-                        <span>Specify Meal Counts:</span>
-                        <span className="font-mono text-[11px]">
-                          Total: {editVegCount + editNonVegCount} of {editAdults + editChildren} Guests
-                        </span>
-                      </div>
-                      <div className="grid grid-cols-2 gap-3 pt-1">
-                        <div className="flex items-center justify-between bg-white p-2 rounded-lg border border-amber-200">
-                          <span className="font-bold text-gray-700">Veg Pax:</span>
-                          <div className="flex items-center gap-1.5">
-                            <button
-                              type="button"
-                              onClick={() => setEditVegCount(Math.max(0, editVegCount - 1))}
-                              className="w-6 h-6 rounded border border-gray-300 flex items-center justify-center font-bold hover:bg-gray-100"
-                            >
-                              -
-                            </button>
-                            <span className="w-5 text-center font-mono font-bold">{editVegCount}</span>
-                            <button
-                              type="button"
-                              onClick={() => setEditVegCount(editVegCount + 1)}
-                              className="w-6 h-6 rounded border border-gray-300 flex items-center justify-center font-bold hover:bg-gray-100"
-                            >
-                              +
-                            </button>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center justify-between bg-white p-2 rounded-lg border border-amber-200">
-                          <span className="font-bold text-gray-700">Non-Veg:</span>
-                          <div className="flex items-center gap-1.5">
-                            <button
-                              type="button"
-                              onClick={() => setEditNonVegCount(Math.max(0, editNonVegCount - 1))}
-                              className="w-6 h-6 rounded border border-gray-300 flex items-center justify-center font-bold hover:bg-gray-100"
-                            >
-                              -
-                            </button>
-                            <span className="w-5 text-center font-mono font-bold">{editNonVegCount}</span>
-                            <button
-                              type="button"
-                              onClick={() => setEditNonVegCount(editNonVegCount + 1)}
-                              className="w-6 h-6 rounded border border-gray-300 flex items-center justify-center font-bold hover:bg-gray-100"
-                            >
-                              +
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* 5. Room Allocation Chips */}
-                <div className="space-y-3 pt-3 border-t border-gray-100">
-                  <div className="flex items-center justify-between">
-                    <h3 className="font-bold uppercase tracking-wider text-gray-700 text-[11px]">
-                      Allocated Accommodation Units *
-                    </h3>
-                    <span className="font-mono text-[10px] text-gray-500">
-                      {editRooms.length} {editRooms.length === 1 ? "Room" : "Rooms"} Selected
-                    </span>
-                  </div>
-
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                    {rooms.map((room) => {
-                      const isSelected = editRooms.includes(room.id);
-                      return (
-                        <button
-                          key={room.id}
-                          type="button"
-                          onClick={() => handleToggleEditRoom(room.id)}
-                          className={`p-2.5 rounded-xl border text-left cursor-pointer transition-all ${
-                            isSelected
-                              ? "bg-[#101814] text-white border-[#101814] shadow-xs"
-                              : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
-                          }`}
-                        >
-                          <span className="font-bold block text-xs">{room.name}</span>
-                          <span className={`text-[10px] block truncate ${isSelected ? "text-gray-300" : "text-gray-500"}`}>
-                            {room.type}
-                          </span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* 6. Financial Ledger & Status */}
-                <div className="space-y-3 pt-3 border-t border-gray-100">
-                  <h3 className="font-bold uppercase tracking-wider text-gray-700 text-[11px]">
-                    Folio Status & Payment Ledger
-                  </h3>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1">
-                      <label className="font-semibold text-gray-600">Folio Status</label>
-                      <select
-                        value={editStatus}
-                        onChange={(e) => setEditStatus(e.target.value as any)}
-                        className="w-full h-10 px-3 rounded-xl border border-[#E2E7E4] bg-white font-medium focus:border-[#1E6F50]"
-                      >
-                        <option value="Confirmed">Confirmed</option>
-                        <option value="Pending Advance">Pending Advance</option>
-                        <option value="Checked-In">Checked-In</option>
-                        <option value="Completed">Completed</option>
-                        <option value="Cancelled">Cancelled</option>
-                      </select>
-                    </div>
-
-                    <div className="space-y-1">
-                      <label className="font-semibold text-gray-600">Payment Mode</label>
-                      <select
-                        value={editPaymentMode}
-                        onChange={(e) => setEditPaymentMode(e.target.value as any)}
-                        className="w-full h-10 px-3 rounded-xl border border-[#E2E7E4] bg-white font-medium focus:border-[#1E6F50]"
-                      >
-                        <option value="UPI">UPI (GPay / PhonePe)</option>
-                        <option value="Cash">Cash at Desk</option>
-                        <option value="Card">Debit / Credit Card</option>
-                        <option value="Bank Transfer">NEFT / IMPS</option>
-                        <option value="Pending">Payment Pending</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div className="p-3.5 bg-gray-50 rounded-xl space-y-3 border border-gray-200">
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="space-y-1">
-                        <label className="font-semibold text-gray-600">Total Tariff (₹)</label>
-                        <input
-                          type="number"
-                          value={editTotalAmount}
-                          onChange={(e) => setEditTotalAmount(Number(e.target.value))}
-                          className="w-full h-10 px-3 rounded-xl border border-gray-300 font-mono font-bold text-[#161D1A] bg-white focus:border-[#1E6F50]"
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <label className="font-semibold text-gray-600">Advance Received (₹)</label>
-                        <input
-                          type="number"
-                          value={editAdvancePaid}
-                          onChange={(e) => setEditAdvancePaid(Number(e.target.value))}
-                          className="w-full h-10 px-3 rounded-xl border border-gray-300 font-mono font-bold text-[#1E6F50] bg-white focus:border-[#1E6F50]"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="pt-2 border-t border-gray-200 flex items-center justify-between text-xs">
-                      <span className="font-bold text-gray-700">Calculated Balance Due:</span>
-                      <span className={`font-mono font-bold text-sm ${editTotalAmount - editAdvancePaid > 0 ? "text-[#E06354]" : "text-[#1E6F50]"}`}>
-                        ₹{Math.max(0, editTotalAmount - editAdvancePaid).toLocaleString("en-IN")}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* 7. Special Notes */}
-                <div className="space-y-1 pt-2 border-t border-gray-100">
-                  <label className="font-semibold text-gray-600">Special Notes / Requests</label>
-                  <textarea
-                    rows={2}
-                    placeholder="e.g. Early check-in requested, Jain meals, birthday celebration"
-                    value={editNotes}
-                    onChange={(e) => setEditNotes(e.target.value)}
-                    className="w-full p-3 rounded-xl border border-[#E2E7E4] focus:border-[#1E6F50] focus:outline-none resize-none"
-                  />
-                </div>
-
-                {/* Sticky Action Footer */}
-                <div className="sticky bottom-0 bg-white/95 backdrop-blur-xs pt-3 pb-4 border-t border-gray-200 flex items-center justify-end gap-2.5 -mx-5 sm:-mx-6 px-5 sm:px-6 shadow-sm">
-                  <button
-                    type="button"
-                    onClick={() => setEditingBooking(null)}
-                    className="flex-1 sm:flex-none px-4 py-2.5 rounded-xl border border-gray-300 hover:bg-gray-100 font-semibold text-xs transition-colors cursor-pointer"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="flex-1 sm:flex-none px-6 py-2.5 rounded-xl bg-[#101814] hover:bg-black text-white font-semibold text-xs uppercase tracking-wider shadow-sm flex items-center justify-center gap-2 transition-colors cursor-pointer"
-                  >
-                    <Save className="w-4 h-4 text-[#89D6B1]" />
-                    <span>Update Folio Safely</span>
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        )}
-
-        {/* =========================================================================
-            MODAL 1: QUICK ID COLLECTION AT CHECK-IN
-           ========================================================================= */}
-        {collectIdBooking && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div
-              className="fixed inset-0 bg-black/50 backdrop-blur-xs transition-opacity"
-              onClick={() => setCollectIdBooking(null)}
-            ></div>
-
-            <div className="relative bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl z-10 space-y-5 animate-in zoom-in-95 duration-200 border border-[#E2E7E4]">
-              <div className="flex items-center justify-between pb-3 border-b border-[#E2E7E4]">
-                <div>
-                  <h3 className="text-base font-bold text-[#161D1A]">
-                    Record Guest ID at Check-In
-                  </h3>
-                  <p className="text-xs text-gray-500 font-mono mt-0.5">
-                    {collectIdBooking.guestName} · {collectIdBooking.id}
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setCollectIdBooking(null)}
-                  className="p-1.5 text-gray-400 hover:text-black rounded-lg cursor-pointer"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              <form onSubmit={handleSaveCollectedId} className="space-y-4 text-xs">
-                <div className="space-y-1">
-                  <label className="font-semibold text-gray-700">Govt ID Type *</label>
-                  <select
-                    value={collectIdType}
-                    onChange={(e) => setCollectIdType(e.target.value as any)}
-                    className="w-full h-10 px-3 rounded-xl border border-[#E2E7E4] bg-white font-medium focus:border-[#1E6F50]"
-                  >
-                    <option value="Aadhaar">Aadhaar Card</option>
-                    <option value="Driving License">Driving License</option>
-                    <option value="Passport">Passport</option>
-                    <option value="PAN">PAN Card</option>
-                    <option value="Voter ID">Voter ID</option>
-                  </select>
-                </div>
-
-                <div className="space-y-1">
-                  <label className="font-semibold text-gray-700">ID Last 4 Digits (Optional)</label>
-                  <input
-                    type="text"
-                    maxLength={4}
-                    placeholder="e.g. 4892"
-                    value={collectIdLast4}
-                    onChange={(e) => setCollectIdLast4(e.target.value)}
-                    className="w-full h-10 px-3 rounded-xl border border-[#E2E7E4] font-mono text-center tracking-widest font-bold focus:border-[#1E6F50]"
-                  />
-                </div>
-
-                <div className="pt-2 flex items-center justify-end gap-2.5">
-                  <button
-                    type="button"
-                    onClick={() => setCollectIdBooking(null)}
-                    className="px-4 py-2.5 rounded-xl border border-gray-300 hover:bg-gray-100 font-semibold text-xs cursor-pointer"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-5 py-2.5 rounded-xl bg-[#1E6F50] hover:bg-[#185e43] text-white font-semibold text-xs uppercase tracking-wider flex items-center gap-1.5 shadow-xs cursor-pointer"
-                  >
-                    <CheckCircle2 className="w-4 h-4 text-[#89D6B1]" />
-                    <span>Mark ID Collected</span>
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        )}
-
-
-
-        {/* =========================================================================
-            SLIDE-OVER DRAWER: SAFE RESERVATION EDITOR (editingBooking)
-           ========================================================================= */}
-        {editingBooking && (
-          <div className="fixed inset-0 z-50 flex justify-end">
-            {/* Backdrop */}
-            <div
-              className="fixed inset-0 bg-black/50 backdrop-blur-xs transition-opacity"
-              onClick={() => setEditingBooking(null)}
-            ></div>
-
-            {/* Drawer Body */}
-            <div className="relative w-full max-w-xl bg-white h-full shadow-2xl z-10 flex flex-col justify-between overflow-hidden animate-in slide-in-from-right duration-300">
-              {/* Drawer Header */}
-              <div className="p-5 sm:p-6 bg-[#101814] text-white flex items-center justify-between border-b border-white/10">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono text-[11px] text-[#89D6B1] uppercase tracking-wider block">
-                      Folio Editor
-                    </span>
-                    <span className="px-2 py-0.2 rounded bg-white/10 text-white font-mono text-[10px]">
-                      {editingBooking.id}
-                    </span>
-                  </div>
-                  <h2 className="font-serif text-xl sm:text-2xl font-bold text-white mt-0.5">
-                    Update Reservation
-                  </h2>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setEditingBooking(null)}
-                  className="p-2 text-white/70 hover:text-white hover:bg-white/10 rounded-lg transition-colors cursor-pointer"
-                  title="Close without saving"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              {/* Form Content - Clean, Structured & Safe */}
-              <form onSubmit={handleSaveEdit} className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-5 text-xs text-[#161D1A]">
-                {/* Safe Banner */}
-                <div className="p-3 rounded-xl bg-[#F4FBF6] border border-[#1E6F50]/20 flex items-center gap-2.5 text-xs text-[#1E6F50]">
-                  <CheckCircle2 className="w-4 h-4 shrink-0 text-[#1E6F50]" />
-                  <span>
-                    Editing live record for <strong>{editingBooking.guestName}</strong>. All updates are logged safely.
-                  </span>
-                </div>
-
-                {/* 1. Guest Information */}
-                <div className="space-y-3">
-                  <h3 className="font-bold uppercase tracking-wider text-gray-700 text-[11px]">
-                    Guest Details
-                  </h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div className="sm:col-span-2 space-y-1">
-                      <label className="font-semibold text-gray-600">Full Name *</label>
-                      <input
-                        type="text"
-                        required
-                        value={editGuestName}
-                        onChange={(e) => setEditGuestName(e.target.value)}
-                        className="w-full h-10 px-3 rounded-xl border border-[#E2E7E4] focus:border-[#1E6F50] focus:outline-none"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="font-semibold text-gray-600">WhatsApp Mobile *</label>
-                      <input
-                        type="tel"
-                        required
-                        value={editPhone}
-                        onChange={(e) => setEditPhone(e.target.value)}
-                        className="w-full h-10 px-3 rounded-xl border border-[#E2E7E4] font-mono focus:border-[#1E6F50] focus:outline-none"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="font-semibold text-gray-600">City / Origin</label>
-                      <input
-                        type="text"
-                        value={editCity}
-                        onChange={(e) => setEditCity(e.target.value)}
-                        className="w-full h-10 px-3 rounded-xl border border-[#E2E7E4] focus:border-[#1E6F50] focus:outline-none"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* 2. Stay Dates & Package */}
-                <div className="space-y-3 pt-3 border-t border-gray-100">
-                  <h3 className="font-bold uppercase tracking-wider text-gray-700 text-[11px]">
-                    Stay Dates & Package
-                  </h3>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1">
-                      <label className="font-semibold text-gray-600">Check-In Date *</label>
-                      <input
-                        type="date"
-                        required
-                        value={editCheckIn}
-                        onChange={(e) => setEditCheckIn(e.target.value)}
-                        className="w-full h-10 px-3 rounded-xl border border-[#E2E7E4] font-mono focus:border-[#1E6F50]"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="font-semibold text-gray-600">Check-Out Date *</label>
-                      <input
-                        type="date"
-                        required
-                        value={editCheckOut}
-                        onChange={(e) => setEditCheckOut(e.target.value)}
-                        className="w-full h-10 px-3 rounded-xl border border-[#E2E7E4] font-mono focus:border-[#1E6F50]"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="font-semibold text-gray-600">Package Experience</label>
-                    <select
-                      value={editPackageId}
-                      onChange={(e) => setEditPackageId(e.target.value)}
-                      className="w-full h-10 px-3 rounded-xl border border-[#E2E7E4] bg-white font-medium focus:border-[#1E6F50]"
-                    >
-                      {packages.map((pkg) => (
-                        <option key={pkg.id} value={pkg.id}>
-                          {pkg.name} ({pkg.time})
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                {/* 3. Headcount Steppers */}
-                <div className="space-y-3 pt-3 border-t border-gray-100">
-                  <h3 className="font-bold uppercase tracking-wider text-gray-700 text-[11px]">
-                    Guest Headcount
-                  </h3>
-                  <div className="grid grid-cols-2 gap-3">
-                    {/* Adults Stepper */}
-                    <div className="p-3 bg-gray-50 rounded-xl border border-gray-200 flex items-center justify-between">
-                      <div>
-                        <span className="font-semibold block text-gray-700">Adults</span>
-                        <span className="text-[10px] text-gray-500">Age 12+</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={() => setEditAdults(Math.max(1, editAdults - 1))}
-                          className="w-7 h-7 rounded-lg border border-gray-300 flex items-center justify-center font-bold hover:bg-gray-200 cursor-pointer"
-                        >
-                          -
-                        </button>
-                        <span className="w-5 text-center font-mono font-bold">{editAdults}</span>
-                        <button
-                          type="button"
-                          onClick={() => setEditAdults(editAdults + 1)}
-                          className="w-7 h-7 rounded-lg border border-gray-300 flex items-center justify-center font-bold hover:bg-gray-200 cursor-pointer"
-                        >
-                          +
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Children Stepper */}
-                    <div className="p-3 bg-gray-50 rounded-xl border border-gray-200 flex items-center justify-between">
-                      <div>
-                        <span className="font-semibold block text-gray-700">Children</span>
-                        <span className="text-[10px] text-gray-500">Age 5 to 11</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={() => setEditChildren(Math.max(0, editChildren - 1))}
-                          className="w-7 h-7 rounded-lg border border-gray-300 flex items-center justify-center font-bold hover:bg-gray-200 cursor-pointer"
-                        >
-                          -
-                        </button>
-                        <span className="w-5 text-center font-mono font-bold">{editChildren}</span>
-                        <button
-                          type="button"
-                          onClick={() => setEditChildren(editChildren + 1)}
-                          className="w-7 h-7 rounded-lg border border-gray-300 flex items-center justify-center font-bold hover:bg-gray-200 cursor-pointer"
-                        >
-                          +
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* 4. Meal Preference with Exact Breakdown */}
-                <div className="space-y-3 pt-3 border-t border-gray-100">
-                  <h3 className="font-bold uppercase tracking-wider text-gray-700 text-[11px]">
-                    Kitchen Food Preference
-                  </h3>
-
-                  <div className="grid grid-cols-3 gap-2">
-                    {(["Non-Veg", "Veg", "Mixed"] as const).map((pref) => (
-                      <button
-                        key={pref}
-                        type="button"
-                        onClick={() => {
-                          setEditMealPreference(pref);
-                          if (pref === "Mixed" && editVegCount === 0 && editNonVegCount === 0) {
-                            setEditVegCount(Math.ceil((editAdults + editChildren) / 2));
-                            setEditNonVegCount(Math.floor((editAdults + editChildren) / 2));
-                          }
-                        }}
-                        className={`py-2 rounded-xl border text-xs font-semibold cursor-pointer transition-colors ${
-                          editMealPreference === pref
-                            ? "bg-[#1E6F50] text-white border-[#1E6F50] shadow-xs"
-                            : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
-                        }`}
-                      >
-                        {pref}
-                      </button>
-                    ))}
-                  </div>
-
-                  {editMealPreference === "Mixed" && (
-                    <div className="p-3 bg-amber-50/60 rounded-xl border border-amber-200/80 space-y-2 animate-in fade-in">
-                      <div className="flex items-center justify-between text-xs text-amber-900 font-semibold">
-                        <span>Specify Meal Counts:</span>
-                        <span className="font-mono text-[11px]">
-                          Total: {editVegCount + editNonVegCount} of {editAdults + editChildren} Guests
-                        </span>
-                      </div>
-                      <div className="grid grid-cols-2 gap-3 pt-1">
-                        <div className="flex items-center justify-between bg-white p-2 rounded-lg border border-amber-200">
-                          <span className="font-bold text-gray-700">Veg Pax:</span>
-                          <div className="flex items-center gap-1.5">
-                            <button
-                              type="button"
-                              onClick={() => setEditVegCount(Math.max(0, editVegCount - 1))}
-                              className="w-6 h-6 rounded border border-gray-300 flex items-center justify-center font-bold hover:bg-gray-100"
-                            >
-                              -
-                            </button>
-                            <span className="w-5 text-center font-mono font-bold">{editVegCount}</span>
-                            <button
-                              type="button"
-                              onClick={() => setEditVegCount(editVegCount + 1)}
-                              className="w-6 h-6 rounded border border-gray-300 flex items-center justify-center font-bold hover:bg-gray-100"
-                            >
-                              +
-                            </button>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center justify-between bg-white p-2 rounded-lg border border-amber-200">
-                          <span className="font-bold text-gray-700">Non-Veg:</span>
-                          <div className="flex items-center gap-1.5">
-                            <button
-                              type="button"
-                              onClick={() => setEditNonVegCount(Math.max(0, editNonVegCount - 1))}
-                              className="w-6 h-6 rounded border border-gray-300 flex items-center justify-center font-bold hover:bg-gray-100"
-                            >
-                              -
-                            </button>
-                            <span className="w-5 text-center font-mono font-bold">{editNonVegCount}</span>
-                            <button
-                              type="button"
-                              onClick={() => setEditNonVegCount(editNonVegCount + 1)}
-                              className="w-6 h-6 rounded border border-gray-300 flex items-center justify-center font-bold hover:bg-gray-100"
-                            >
-                              +
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* 5. Room Allocation Chips */}
-                <div className="space-y-3 pt-3 border-t border-gray-100">
-                  <div className="flex items-center justify-between">
-                    <h3 className="font-bold uppercase tracking-wider text-gray-700 text-[11px]">
-                      Allocated Accommodation Units *
-                    </h3>
-                    <span className="font-mono text-[10px] text-gray-500">
-                      {editRooms.length} {editRooms.length === 1 ? "Room" : "Rooms"} Selected
-                    </span>
-                  </div>
-
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                    {rooms.map((room) => {
-                      const isSelected = editRooms.includes(room.id);
-                      return (
-                        <button
-                          key={room.id}
-                          type="button"
-                          onClick={() => handleToggleEditRoom(room.id)}
-                          className={`p-2.5 rounded-xl border text-left cursor-pointer transition-all ${
-                            isSelected
-                              ? "bg-[#101814] text-white border-[#101814] shadow-xs"
-                              : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
-                          }`}
-                        >
-                          <span className="font-bold block text-xs">{room.name}</span>
-                          <span className={`text-[10px] block truncate ${isSelected ? "text-gray-300" : "text-gray-500"}`}>
-                            {room.type}
-                          </span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* 6. Financial Ledger & Status */}
-                <div className="space-y-3 pt-3 border-t border-gray-100">
-                  <h3 className="font-bold uppercase tracking-wider text-gray-700 text-[11px]">
-                    Folio Status & Payment Ledger
-                  </h3>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1">
-                      <label className="font-semibold text-gray-600">Folio Status</label>
-                      <select
-                        value={editStatus}
-                        onChange={(e) => setEditStatus(e.target.value as any)}
-                        className="w-full h-10 px-3 rounded-xl border border-[#E2E7E4] bg-white font-medium focus:border-[#1E6F50]"
-                      >
-                        <option value="Confirmed">Confirmed</option>
-                        <option value="Pending Advance">Pending Advance</option>
-                        <option value="Checked-In">Checked-In</option>
-                        <option value="Completed">Completed</option>
-                        <option value="Cancelled">Cancelled</option>
-                      </select>
-                    </div>
-
-                    <div className="space-y-1">
-                      <label className="font-semibold text-gray-600">Payment Mode</label>
-                      <select
-                        value={editPaymentMode}
-                        onChange={(e) => setEditPaymentMode(e.target.value as any)}
-                        className="w-full h-10 px-3 rounded-xl border border-[#E2E7E4] bg-white font-medium focus:border-[#1E6F50]"
-                      >
-                        <option value="UPI">UPI (GPay / PhonePe)</option>
-                        <option value="Cash">Cash at Desk</option>
-                        <option value="Card">Debit / Credit Card</option>
-                        <option value="Bank Transfer">NEFT / IMPS</option>
-                        <option value="Pending">Payment Pending</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div className="p-3.5 bg-gray-50 rounded-xl space-y-3 border border-gray-200">
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="space-y-1">
-                        <label className="font-semibold text-gray-600">Total Tariff (₹)</label>
-                        <input
-                          type="number"
-                          value={editTotalAmount}
-                          onChange={(e) => setEditTotalAmount(Number(e.target.value))}
-                          className="w-full h-10 px-3 rounded-xl border border-gray-300 font-mono font-bold text-[#161D1A] bg-white focus:border-[#1E6F50]"
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <label className="font-semibold text-gray-600">Advance Received (₹)</label>
-                        <input
-                          type="number"
-                          value={editAdvancePaid}
-                          onChange={(e) => setEditAdvancePaid(Number(e.target.value))}
-                          className="w-full h-10 px-3 rounded-xl border border-gray-300 font-mono font-bold text-[#1E6F50] bg-white focus:border-[#1E6F50]"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="pt-2 border-t border-gray-200 flex items-center justify-between text-xs">
-                      <span className="font-bold text-gray-700">Calculated Balance Due:</span>
-                      <span className={`font-mono font-bold text-sm ${editTotalAmount - editAdvancePaid > 0 ? "text-[#E06354]" : "text-[#1E6F50]"}`}>
-                        ₹{Math.max(0, editTotalAmount - editAdvancePaid).toLocaleString("en-IN")}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* 7. Special Notes */}
-                <div className="space-y-1 pt-2 border-t border-gray-100">
-                  <label className="font-semibold text-gray-600">Special Notes / Requests</label>
-                  <textarea
-                    rows={2}
-                    placeholder="e.g. Early check-in requested, Jain meals, birthday celebration"
-                    value={editNotes}
-                    onChange={(e) => setEditNotes(e.target.value)}
-                    className="w-full p-3 rounded-xl border border-[#E2E7E4] focus:border-[#1E6F50] focus:outline-none resize-none"
-                  />
-                </div>
-
-                {/* Sticky Action Footer */}
-                <div className="sticky bottom-0 bg-white/95 backdrop-blur-xs pt-3 pb-4 border-t border-gray-200 flex items-center justify-end gap-2.5 -mx-5 sm:-mx-6 px-5 sm:px-6 shadow-sm">
-                  <button
-                    type="button"
-                    onClick={() => setEditingBooking(null)}
-                    className="flex-1 sm:flex-none px-4 py-2.5 rounded-xl border border-gray-300 hover:bg-gray-100 font-semibold text-xs transition-colors cursor-pointer"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="flex-1 sm:flex-none px-6 py-2.5 rounded-xl bg-[#101814] hover:bg-black text-white font-semibold text-xs uppercase tracking-wider shadow-sm flex items-center justify-center gap-2 transition-colors cursor-pointer"
-                  >
-                    <Save className="w-4 h-4 text-[#89D6B1]" />
-                    <span>Update Folio Safely</span>
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        )}
-
-        {/* =========================================================================
-            MODAL 2: VIEW RECORDED ID DETAILS
-           ========================================================================= */}
-        {selectedKycBooking && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div
-              className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity"
-              onClick={() => setSelectedKycBooking(null)}
-            ></div>
-
-            <div className="relative bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl z-10 space-y-5 animate-in zoom-in-95 duration-200 border border-[#E2E7E4]">
-              {/* Modal Header */}
-              <div className="flex items-center justify-between pb-3 border-b border-[#E2E7E4]">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-9 h-9 rounded-xl bg-[#F4FBF6] text-[#1E6F50] flex items-center justify-center border border-[#1E6F50]/20">
-                    <CheckCircle2 className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h3 className="text-base font-bold text-[#161D1A]">
-                      Guest ID on File
-                    </h3>
-                    <p className="font-mono text-xs text-gray-500">
-                      {selectedKycBooking.guestName} · {selectedKycBooking.id}
-                    </p>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setSelectedKycBooking(null)}
-                  className="p-1.5 text-gray-400 hover:text-black rounded-lg cursor-pointer"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              {/* ID Details Card */}
-              <div className="p-4 bg-[#F9FAF9] rounded-xl border border-[#E2E7E4] space-y-3 font-mono text-xs">
-                <div className="flex justify-between items-center pb-2 border-b border-gray-200">
-                  <span className="text-gray-500 uppercase text-[10px]">Document Type</span>
-                  <span className="font-bold text-[#161D1A]">{selectedKycBooking.idType || "Govt ID"}</span>
-                </div>
-                <div className="flex justify-between items-center pb-2 border-b border-gray-200">
-                  <span className="text-gray-500 uppercase text-[10px]">Document Number</span>
-                  <span className="font-bold text-[#1E6F50] tracking-wider">
-                    •••• •••• {selectedKycBooking.idLast4 || "Verified"}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center pb-2 border-b border-gray-200">
-                  <span className="text-gray-500 uppercase text-[10px]">Guest Contact</span>
-                  <span className="text-gray-700">{selectedKycBooking.phone}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-500 uppercase text-[10px]">Verification Status</span>
-                  <span className="text-xs font-bold text-[#1E6F50] flex items-center gap-1">
-                    <CheckCircle2 className="w-3.5 h-3.5" /> Collected at Check-In
-                  </span>
-                </div>
-              </div>
-
-              {/* Modal Footer */}
-              <div className="flex items-center justify-end pt-1">
-                <button
-                  type="button"
-                  onClick={() => setSelectedKycBooking(null)}
-                  className="px-5 py-2.5 bg-[#101814] text-white rounded-xl text-xs font-semibold hover:bg-black transition-colors cursor-pointer"
-                >
-                  Close
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* =========================================================================
-            SLIDE-OVER DRAWER: SAFE RESERVATION EDITOR (editingBooking)
-           ========================================================================= */}
-        {editingBooking && (
-          <div className="fixed inset-0 z-50 flex justify-end">
-            {/* Backdrop */}
-            <div
-              className="fixed inset-0 bg-black/50 backdrop-blur-xs transition-opacity"
-              onClick={() => setEditingBooking(null)}
-            ></div>
-
-            {/* Drawer Body */}
-            <div className="relative w-full max-w-xl bg-white h-full shadow-2xl z-10 flex flex-col justify-between overflow-hidden animate-in slide-in-from-right duration-300">
-              {/* Drawer Header */}
-              <div className="p-5 sm:p-6 bg-[#101814] text-white flex items-center justify-between border-b border-white/10">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono text-[11px] text-[#89D6B1] uppercase tracking-wider block">
-                      Folio Editor
-                    </span>
-                    <span className="px-2 py-0.2 rounded bg-white/10 text-white font-mono text-[10px]">
-                      {editingBooking.id}
-                    </span>
-                  </div>
-                  <h2 className="font-serif text-xl sm:text-2xl font-bold text-white mt-0.5">
-                    Update Reservation
-                  </h2>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setEditingBooking(null)}
-                  className="p-2 text-white/70 hover:text-white hover:bg-white/10 rounded-lg transition-colors cursor-pointer"
-                  title="Close without saving"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              {/* Form Content - Clean, Structured & Safe */}
-              <form onSubmit={handleSaveEdit} className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-5 text-xs text-[#161D1A]">
-                {/* Safe Banner */}
-                <div className="p-3 rounded-xl bg-[#F4FBF6] border border-[#1E6F50]/20 flex items-center gap-2.5 text-xs text-[#1E6F50]">
-                  <CheckCircle2 className="w-4 h-4 shrink-0 text-[#1E6F50]" />
-                  <span>
-                    Editing live record for <strong>{editingBooking.guestName}</strong>. All updates are logged safely.
-                  </span>
-                </div>
-
-                {/* 1. Guest Information */}
-                <div className="space-y-3">
-                  <h3 className="font-bold uppercase tracking-wider text-gray-700 text-[11px]">
-                    Guest Details
-                  </h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div className="sm:col-span-2 space-y-1">
-                      <label className="font-semibold text-gray-600">Full Name *</label>
-                      <input
-                        type="text"
-                        required
-                        value={editGuestName}
-                        onChange={(e) => setEditGuestName(e.target.value)}
-                        className="w-full h-10 px-3 rounded-xl border border-[#E2E7E4] focus:border-[#1E6F50] focus:outline-none"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="font-semibold text-gray-600">WhatsApp Mobile *</label>
-                      <input
-                        type="tel"
-                        required
-                        value={editPhone}
-                        onChange={(e) => setEditPhone(e.target.value)}
-                        className="w-full h-10 px-3 rounded-xl border border-[#E2E7E4] font-mono focus:border-[#1E6F50] focus:outline-none"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="font-semibold text-gray-600">City / Origin</label>
-                      <input
-                        type="text"
-                        value={editCity}
-                        onChange={(e) => setEditCity(e.target.value)}
-                        className="w-full h-10 px-3 rounded-xl border border-[#E2E7E4] focus:border-[#1E6F50] focus:outline-none"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* 2. Stay Dates & Package */}
-                <div className="space-y-3 pt-3 border-t border-gray-100">
-                  <h3 className="font-bold uppercase tracking-wider text-gray-700 text-[11px]">
-                    Stay Dates & Package
-                  </h3>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1">
-                      <label className="font-semibold text-gray-600">Check-In Date *</label>
-                      <input
-                        type="date"
-                        required
-                        value={editCheckIn}
-                        onChange={(e) => setEditCheckIn(e.target.value)}
-                        className="w-full h-10 px-3 rounded-xl border border-[#E2E7E4] font-mono focus:border-[#1E6F50]"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="font-semibold text-gray-600">Check-Out Date *</label>
-                      <input
-                        type="date"
-                        required
-                        value={editCheckOut}
-                        onChange={(e) => setEditCheckOut(e.target.value)}
-                        className="w-full h-10 px-3 rounded-xl border border-[#E2E7E4] font-mono focus:border-[#1E6F50]"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="font-semibold text-gray-600">Package Experience</label>
-                    <select
-                      value={editPackageId}
-                      onChange={(e) => setEditPackageId(e.target.value)}
-                      className="w-full h-10 px-3 rounded-xl border border-[#E2E7E4] bg-white font-medium focus:border-[#1E6F50]"
-                    >
-                      {packages.map((pkg) => (
-                        <option key={pkg.id} value={pkg.id}>
-                          {pkg.name} ({pkg.time})
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                {/* 3. Headcount Steppers */}
-                <div className="space-y-3 pt-3 border-t border-gray-100">
-                  <h3 className="font-bold uppercase tracking-wider text-gray-700 text-[11px]">
-                    Guest Headcount
-                  </h3>
-                  <div className="grid grid-cols-2 gap-3">
-                    {/* Adults Stepper */}
-                    <div className="p-3 bg-gray-50 rounded-xl border border-gray-200 flex items-center justify-between">
-                      <div>
-                        <span className="font-semibold block text-gray-700">Adults</span>
-                        <span className="text-[10px] text-gray-500">Age 12+</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={() => setEditAdults(Math.max(1, editAdults - 1))}
-                          className="w-7 h-7 rounded-lg border border-gray-300 flex items-center justify-center font-bold hover:bg-gray-200 cursor-pointer"
-                        >
-                          -
-                        </button>
-                        <span className="w-5 text-center font-mono font-bold">{editAdults}</span>
-                        <button
-                          type="button"
-                          onClick={() => setEditAdults(editAdults + 1)}
-                          className="w-7 h-7 rounded-lg border border-gray-300 flex items-center justify-center font-bold hover:bg-gray-200 cursor-pointer"
-                        >
-                          +
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Children Stepper */}
-                    <div className="p-3 bg-gray-50 rounded-xl border border-gray-200 flex items-center justify-between">
-                      <div>
-                        <span className="font-semibold block text-gray-700">Children</span>
-                        <span className="text-[10px] text-gray-500">Age 5 to 11</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={() => setEditChildren(Math.max(0, editChildren - 1))}
-                          className="w-7 h-7 rounded-lg border border-gray-300 flex items-center justify-center font-bold hover:bg-gray-200 cursor-pointer"
-                        >
-                          -
-                        </button>
-                        <span className="w-5 text-center font-mono font-bold">{editChildren}</span>
-                        <button
-                          type="button"
-                          onClick={() => setEditChildren(editChildren + 1)}
-                          className="w-7 h-7 rounded-lg border border-gray-300 flex items-center justify-center font-bold hover:bg-gray-200 cursor-pointer"
-                        >
-                          +
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* 4. Meal Preference with Exact Breakdown */}
-                <div className="space-y-3 pt-3 border-t border-gray-100">
-                  <h3 className="font-bold uppercase tracking-wider text-gray-700 text-[11px]">
-                    Kitchen Food Preference
-                  </h3>
-
-                  <div className="grid grid-cols-3 gap-2">
-                    {(["Non-Veg", "Veg", "Mixed"] as const).map((pref) => (
-                      <button
-                        key={pref}
-                        type="button"
-                        onClick={() => {
-                          setEditMealPreference(pref);
-                          if (pref === "Mixed" && editVegCount === 0 && editNonVegCount === 0) {
-                            setEditVegCount(Math.ceil((editAdults + editChildren) / 2));
-                            setEditNonVegCount(Math.floor((editAdults + editChildren) / 2));
-                          }
-                        }}
-                        className={`py-2 rounded-xl border text-xs font-semibold cursor-pointer transition-colors ${
-                          editMealPreference === pref
-                            ? "bg-[#1E6F50] text-white border-[#1E6F50] shadow-xs"
-                            : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
-                        }`}
-                      >
-                        {pref}
-                      </button>
-                    ))}
-                  </div>
-
-                  {editMealPreference === "Mixed" && (
-                    <div className="p-3 bg-amber-50/60 rounded-xl border border-amber-200/80 space-y-2 animate-in fade-in">
-                      <div className="flex items-center justify-between text-xs text-amber-900 font-semibold">
-                        <span>Specify Meal Counts:</span>
-                        <span className="font-mono text-[11px]">
-                          Total: {editVegCount + editNonVegCount} of {editAdults + editChildren} Guests
-                        </span>
-                      </div>
-                      <div className="grid grid-cols-2 gap-3 pt-1">
-                        <div className="flex items-center justify-between bg-white p-2 rounded-lg border border-amber-200">
-                          <span className="font-bold text-gray-700">Veg Pax:</span>
-                          <div className="flex items-center gap-1.5">
-                            <button
-                              type="button"
-                              onClick={() => setEditVegCount(Math.max(0, editVegCount - 1))}
-                              className="w-6 h-6 rounded border border-gray-300 flex items-center justify-center font-bold hover:bg-gray-100"
-                            >
-                              -
-                            </button>
-                            <span className="w-5 text-center font-mono font-bold">{editVegCount}</span>
-                            <button
-                              type="button"
-                              onClick={() => setEditVegCount(editVegCount + 1)}
-                              className="w-6 h-6 rounded border border-gray-300 flex items-center justify-center font-bold hover:bg-gray-100"
-                            >
-                              +
-                            </button>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center justify-between bg-white p-2 rounded-lg border border-amber-200">
-                          <span className="font-bold text-gray-700">Non-Veg:</span>
-                          <div className="flex items-center gap-1.5">
-                            <button
-                              type="button"
-                              onClick={() => setEditNonVegCount(Math.max(0, editNonVegCount - 1))}
-                              className="w-6 h-6 rounded border border-gray-300 flex items-center justify-center font-bold hover:bg-gray-100"
-                            >
-                              -
-                            </button>
-                            <span className="w-5 text-center font-mono font-bold">{editNonVegCount}</span>
-                            <button
-                              type="button"
-                              onClick={() => setEditNonVegCount(editNonVegCount + 1)}
-                              className="w-6 h-6 rounded border border-gray-300 flex items-center justify-center font-bold hover:bg-gray-100"
-                            >
-                              +
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* 5. Room Allocation Chips */}
-                <div className="space-y-3 pt-3 border-t border-gray-100">
-                  <div className="flex items-center justify-between">
-                    <h3 className="font-bold uppercase tracking-wider text-gray-700 text-[11px]">
-                      Allocated Accommodation Units *
-                    </h3>
-                    <span className="font-mono text-[10px] text-gray-500">
-                      {editRooms.length} {editRooms.length === 1 ? "Room" : "Rooms"} Selected
-                    </span>
-                  </div>
-
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                    {rooms.map((room) => {
-                      const isSelected = editRooms.includes(room.id);
-                      return (
-                        <button
-                          key={room.id}
-                          type="button"
-                          onClick={() => handleToggleEditRoom(room.id)}
-                          className={`p-2.5 rounded-xl border text-left cursor-pointer transition-all ${
-                            isSelected
-                              ? "bg-[#101814] text-white border-[#101814] shadow-xs"
-                              : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
-                          }`}
-                        >
-                          <span className="font-bold block text-xs">{room.name}</span>
-                          <span className={`text-[10px] block truncate ${isSelected ? "text-gray-300" : "text-gray-500"}`}>
-                            {room.type}
-                          </span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* 6. Financial Ledger & Status */}
-                <div className="space-y-3 pt-3 border-t border-gray-100">
-                  <h3 className="font-bold uppercase tracking-wider text-gray-700 text-[11px]">
-                    Folio Status & Payment Ledger
-                  </h3>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1">
-                      <label className="font-semibold text-gray-600">Folio Status</label>
-                      <select
-                        value={editStatus}
-                        onChange={(e) => setEditStatus(e.target.value as any)}
-                        className="w-full h-10 px-3 rounded-xl border border-[#E2E7E4] bg-white font-medium focus:border-[#1E6F50]"
-                      >
-                        <option value="Confirmed">Confirmed</option>
-                        <option value="Pending Advance">Pending Advance</option>
-                        <option value="Checked-In">Checked-In</option>
-                        <option value="Completed">Completed</option>
-                        <option value="Cancelled">Cancelled</option>
-                      </select>
-                    </div>
-
-                    <div className="space-y-1">
-                      <label className="font-semibold text-gray-600">Payment Mode</label>
-                      <select
-                        value={editPaymentMode}
-                        onChange={(e) => setEditPaymentMode(e.target.value as any)}
-                        className="w-full h-10 px-3 rounded-xl border border-[#E2E7E4] bg-white font-medium focus:border-[#1E6F50]"
-                      >
-                        <option value="UPI">UPI (GPay / PhonePe)</option>
-                        <option value="Cash">Cash at Desk</option>
-                        <option value="Card">Debit / Credit Card</option>
-                        <option value="Bank Transfer">NEFT / IMPS</option>
-                        <option value="Pending">Payment Pending</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div className="p-3.5 bg-gray-50 rounded-xl space-y-3 border border-gray-200">
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="space-y-1">
-                        <label className="font-semibold text-gray-600">Total Tariff (₹)</label>
-                        <input
-                          type="number"
-                          value={editTotalAmount}
-                          onChange={(e) => setEditTotalAmount(Number(e.target.value))}
-                          className="w-full h-10 px-3 rounded-xl border border-gray-300 font-mono font-bold text-[#161D1A] bg-white focus:border-[#1E6F50]"
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <label className="font-semibold text-gray-600">Advance Received (₹)</label>
-                        <input
-                          type="number"
-                          value={editAdvancePaid}
-                          onChange={(e) => setEditAdvancePaid(Number(e.target.value))}
-                          className="w-full h-10 px-3 rounded-xl border border-gray-300 font-mono font-bold text-[#1E6F50] bg-white focus:border-[#1E6F50]"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="pt-2 border-t border-gray-200 flex items-center justify-between text-xs">
-                      <span className="font-bold text-gray-700">Calculated Balance Due:</span>
-                      <span className={`font-mono font-bold text-sm ${editTotalAmount - editAdvancePaid > 0 ? "text-[#E06354]" : "text-[#1E6F50]"}`}>
-                        ₹{Math.max(0, editTotalAmount - editAdvancePaid).toLocaleString("en-IN")}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* 7. Special Notes */}
-                <div className="space-y-1 pt-2 border-t border-gray-100">
-                  <label className="font-semibold text-gray-600">Special Notes / Requests</label>
-                  <textarea
-                    rows={2}
-                    placeholder="e.g. Early check-in requested, Jain meals, birthday celebration"
-                    value={editNotes}
-                    onChange={(e) => setEditNotes(e.target.value)}
-                    className="w-full p-3 rounded-xl border border-[#E2E7E4] focus:border-[#1E6F50] focus:outline-none resize-none"
-                  />
-                </div>
-
-                {/* Sticky Action Footer */}
-                <div className="sticky bottom-0 bg-white/95 backdrop-blur-xs pt-3 pb-4 border-t border-gray-200 flex items-center justify-end gap-2.5 -mx-5 sm:-mx-6 px-5 sm:px-6 shadow-sm">
-                  <button
-                    type="button"
-                    onClick={() => setEditingBooking(null)}
-                    className="flex-1 sm:flex-none px-4 py-2.5 rounded-xl border border-gray-300 hover:bg-gray-100 font-semibold text-xs transition-colors cursor-pointer"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="flex-1 sm:flex-none px-6 py-2.5 rounded-xl bg-[#101814] hover:bg-black text-white font-semibold text-xs uppercase tracking-wider shadow-sm flex items-center justify-center gap-2 transition-colors cursor-pointer"
-                  >
-                    <Save className="w-4 h-4 text-[#89D6B1]" />
-                    <span>Update Folio Safely</span>
                   </button>
                 </div>
               </form>

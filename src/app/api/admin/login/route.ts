@@ -14,8 +14,7 @@ export async function POST(request: Request) {
     const validPassword =
       password === "pomelo2026" ||
       password === "admin123" ||
-      password === "owner123" ||
-      password === "raut123";
+      password === "owner123";
 
     if (validIdentifier && validPassword) {
       const response = NextResponse.json(

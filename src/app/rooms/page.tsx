@@ -22,7 +22,7 @@ import {
 } from "lucide-react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { useResortStore, ROOM_CATEGORIES, RoomCategoryAvailability } from "@/lib/resort-store";
+import { useResortStore, RoomCategory, RoomCategoryAvailability } from "@/lib/resort-store";
 import { ModifyStayModal } from "@/components/booking/ModifyStayModal";
 
 const MONTH_SHORT = [
@@ -52,7 +52,7 @@ function formatDateShort(dateStr: string): string {
 function RoomsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { getAvailabilityForDateRange } = useResortStore();
+  const { roomCategories, getAvailabilityForDateRange } = useResortStore();
 
   const urlCheckIn = searchParams.get("checkIn") || "";
   const urlCheckOut = searchParams.get("checkOut") || "";
@@ -133,9 +133,9 @@ function RoomsContent() {
   const nights = useMemo(() => {
     if (!startDate || !endDate) return 1;
     if (startDate === endDate) return 1;
-    const s = new Date(startDate).getTime();
-    const e = new Date(endDate).getTime();
-    const diff = Math.round((e - s) / (1000 * 60 * 60 * 24));
+    const [sy, sm, sd] = startDate.split("-").map(Number);
+    const [ey, em, ed] = endDate.split("-").map(Number);
+    const diff = Math.round((Date.UTC(ey, em - 1, ed) - Date.UTC(sy, sm - 1, sd)) / (1000 * 60 * 60 * 24));
     return diff > 0 ? diff : 1;
   }, [startDate, endDate]);
 
@@ -151,7 +151,7 @@ function RoomsContent() {
         totalBooked: 0,
         totalHeld: 0,
         isFullyBooked: false,
-        categories: ROOM_CATEGORIES.map((cat) => ({
+        categories: roomCategories.map((cat) => ({
           category: cat,
           totalRooms: cat.roomCount,
           availableRooms: cat.roomCount,
@@ -163,7 +163,7 @@ function RoomsContent() {
       };
     }
     return getAvailabilityForDateRange(startDate, endDate || startDate);
-  }, [startDate, endDate, getAvailabilityForDateRange]);
+  }, [startDate, endDate, getAvailabilityForDateRange, roomCategories]);
 
   const dateSummaryText = useMemo(() => {
     if (!startDate) return "Select Dates";
@@ -226,9 +226,9 @@ function RoomsContent() {
   const { totalRatePerNight, totalPaxCapacity, grandTotal, selectedItemsList } = useMemo(() => {
     let ratePerNight = 0;
     let paxCap = 0;
-    const items: { category: (typeof ROOM_CATEGORIES)[0]; count: number; subtotal: number }[] = [];
+    const items: { category: RoomCategory; count: number; subtotal: number }[] = [];
 
-    ROOM_CATEGORIES.forEach((cat) => {
+    roomCategories.forEach((cat) => {
       const count = selectedRooms[cat.id] || 0;
       if (count > 0) {
         ratePerNight += count * cat.basePrice;
@@ -248,7 +248,7 @@ function RoomsContent() {
       grandTotal: total,
       selectedItemsList: items,
     };
-  }, [selectedRooms, nights]);
+  }, [selectedRooms, nights, roomCategories]);
 
   // Formatted WhatsApp booking message for multiple selected rooms
   const multiRoomWhatsAppUrl = useMemo(() => {
